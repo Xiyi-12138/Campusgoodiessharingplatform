@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.LikesMapper">
+
+    <select id="selectAll" resultType="com.example.entity.Likes">
+        select * from `likes`
+        <where>
+            <if test="userId != null"> and likes.user_id = #{userId}</if>
+            <if test="articleId != null"> and likes.article_id = #{articleId}</if>
+        </where>
+        order by id desc
+    </select>
+
+    <insert id="insert" parameterType="com.example.entity.Likes" useGeneratedKeys="true">
+        insert into `likes`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="articleId != null">article_id,</if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="articleId != null">#{articleId},</if>
+        </trim>
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Likes">
+        update `likes`
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="articleId != null">
+                article_id = #{articleId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>
