@@ -33,6 +33,8 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
     private static final String ROLE_USER = "\u666e\u901a\u7528\u6237";
     private static final String STATUS_PASS = "\u901a\u8fc7";
+    private static final String STATUS_PENDING = "\u5f85\u5ba1\u6838";
+    private static final String STATUS_REJECT = "\u62d2\u7edd";
     private final ApiService api = ApiClient.service();
     private final Gson gson = new Gson();
     private User currentUser;
@@ -195,11 +197,16 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout actions = row();
         MaterialButton collect = item.collectId == null ? outlineButton("\u6536\u85cf") : button("\u53d6\u6d88\u6536\u85cf");
         MaterialButton detail = outlineButton("\u8be6\u60c5");
+        MaterialButton exchange = outlineButton("\u7533\u8bf7\u4ea4\u6362");
         actions.addView(collect, new LinearLayout.LayoutParams(0, dp(42), 1));
         actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
+        if (item.userId == null || !item.userId.equals(currentUser.id)) {
+            actions.addView(exchange, new LinearLayout.LayoutParams(0, dp(42), 1));
+        }
         card.addView(actions);
         collect.setOnClickListener(v -> toggleCollect(item));
         detail.setOnClickListener(v -> showItemDetail(item));
+        exchange.setOnClickListener(v -> showExchangeDialog(item));
         return card;
     }
 
@@ -291,8 +298,13 @@ public class MainActivity extends AppCompatActivity {
         setPage(scroll(page));
         back.setOnClickListener(v -> showHome());
         send.setOnClickListener(v -> {
+            String contentValue = comment.getText().toString().trim();
+            if (contentValue.length() < 2) {
+                toast("\u8bc4\u8bba\u81f3\u5c11\u9700\u89812\u4e2a\u5b57");
+                return;
+            }
             Map<String, Object> body = new HashMap<>();
-            body.put("userId", currentUser.id); body.put("articleId", article.id); body.put("content", comment.getText().toString());
+            body.put("userId", currentUser.id); body.put("articleId", article.id); body.put("content", contentValue);
             call(api.addComment(body), x -> { toast("\u8bc4\u8bba\u6210\u529f"); showArticleDetail(article); });
         });
         loadArticleComments(comments, article);
@@ -333,10 +345,38 @@ public class MainActivity extends AppCompatActivity {
         box.addView(image(item.img, 220));
         box.addView(text(item.name, 20, true));
         box.addView(text("\u5206\u7c7b: " + safe(item.categoryName) + " | \u6536\u85cf " + intValue(item.collectCount), 13, false));
+        box.addView(text("\u5ba1\u6838: " + safe(item.checkStatus) + " | \u4e0a\u67b6: " + (Boolean.TRUE.equals(item.status) ? "\u5df2\u4e0a\u67b6" : "\u672a\u4e0a\u67b6"), 13, false));
         box.addView(text("\u63cf\u8ff0: " + safe(item.description), 15, false));
         box.addView(text("\u4ea4\u6362\u6761\u4ef6: " + safe(item.requirement), 15, false));
         box.addView(text("\u53d1\u5e03\u4eba: " + safe(item.userName), 13, false));
         new AlertDialog.Builder(this).setTitle("\u7269\u54c1\u8be6\u60c5").setView(scroll(box)).setPositiveButton("\u5173\u95ed", null).show();
+    }
+
+    private void showExchangeDialog(Item item) {
+        LinearLayout form = formLayout();
+        EditText content = input("\u6211\u63d0\u4f9b\u7684\u4ea4\u6362\u7269\u54c1");
+        EditText remark = input("\u4ea4\u6362\u7406\u7531");
+        form.addView(text(item.name, 18, true));
+        form.addView(content, topLp(8));
+        form.addView(remark, topLp(8));
+        new AlertDialog.Builder(this).setTitle("\u7533\u8bf7\u4ea4\u6362")
+                .setView(form)
+                .setNegativeButton("\u53d6\u6d88", null)
+                .setPositiveButton("\u63d0\u4ea4", (d, w) -> {
+                    String contentValue = content.getText().toString().trim();
+                    String remarkValue = remark.getText().toString().trim();
+                    if (contentValue.isEmpty() || remarkValue.isEmpty()) {
+                        toast("\u8bf7\u5b8c\u6574\u586b\u5199\u4ea4\u6362\u7269\u54c1\u548c\u7406\u7531");
+                        return;
+                    }
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("itemId", item.id);
+                    body.put("itemUserid", item.userId);
+                    body.put("userId", currentUser.id);
+                    body.put("content", contentValue);
+                    body.put("remark", remarkValue);
+                    call(api.addCharge(body), x -> toast("\u7533\u8bf7\u5df2\u63d0\u4ea4"));
+                }).show();
     }
 
     private void showHot() {
@@ -355,8 +395,16 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout header = row(); header.setPadding(dp(16), dp(14), dp(16), dp(8));
         header.addView(text("\u4fe1\u606f", 24, true), new LinearLayout.LayoutParams(0, -2, 1));
         MaterialButton readAll = outlineButton("\u5168\u90e8\u5df2\u8bfb"); header.addView(readAll); page.addView(header);
+        LinearLayout tabs = row(); tabs.setPadding(dp(12), 0, dp(12), dp(10));
+        MaterialButton received = button("\u6536\u5230\u7684\u7533\u8bf7");
+        MaterialButton sent = outlineButton("\u6211\u7684\u7533\u8bf7");
+        tabs.addView(received, new LinearLayout.LayoutParams(0, dp(42), 1));
+        tabs.addView(sent, new LinearLayout.LayoutParams(0, dp(42), 1));
+        page.addView(tabs);
         LinearLayout list = listBox(page); setPage(scroll(page));
         readAll.setOnClickListener(v -> call(api.readAll(currentUser.id), x -> showMessages()));
+        received.setOnClickListener(v -> showReceivedCharges());
+        sent.setOnClickListener(v -> showSentCharges());
         call(api.notifications(1, 50, currentUser.id), p -> {
             list.removeAllViews();
             if (p.list == null || p.list.isEmpty()) list.addView(empty("\u6682\u65e0\u4fe1\u606f"));
@@ -366,6 +414,97 @@ public class MainActivity extends AppCompatActivity {
                 list.addView(card);
             }
         });
+    }
+
+    private void showReceivedCharges() {
+        LinearLayout page = verticalPage(); page.addView(titleBar("\u6536\u5230\u7684\u4ea4\u6362\u7533\u8bf7"));
+        LinearLayout list = listBox(page); setPage(scroll(page));
+        call(api.chargePage(1, 50, null, currentUser.id, null), p -> {
+            list.removeAllViews();
+            if (p.list == null || p.list.isEmpty()) list.addView(empty("\u6682\u65e0\u7533\u8bf7"));
+            else for (Charge charge : p.list) list.addView(receivedChargeCard(charge));
+        });
+    }
+
+    private void showSentCharges() {
+        LinearLayout page = verticalPage(); page.addView(titleBar("\u6211\u7684\u4ea4\u6362\u7533\u8bf7"));
+        LinearLayout list = listBox(page); setPage(scroll(page));
+        call(api.chargePage(1, 50, currentUser.id, null, null), p -> {
+            list.removeAllViews();
+            if (p.list == null || p.list.isEmpty()) list.addView(empty("\u6682\u65e0\u7533\u8bf7"));
+            else for (Charge charge : p.list) list.addView(sentChargeCard(charge));
+        });
+    }
+
+    private View receivedChargeCard(Charge charge) {
+        LinearLayout card = card();
+        card.addView(text(safe(charge.itemName), 17, true));
+        card.addView(text("\u7533\u8bf7\u4eba: " + safe(charge.userName) + " | \u72b6\u6001: " + safe(charge.status), 13, false));
+        card.addView(text("\u4ea4\u6362\u7269\u54c1: " + safe(charge.content), 14, false));
+        card.addView(text("\u7406\u7531: " + safe(charge.remark), 14, false));
+        if (STATUS_PASS.equals(charge.status)) card.addView(text("\u5730\u70b9: " + safe(charge.location) + " | \u65f6\u95f4: " + safe(charge.shareTime), 13, false));
+        if (STATUS_REJECT.equals(charge.status)) card.addView(text("\u62d2\u7edd\u7406\u7531: " + safe(charge.reason), 13, false));
+        if (STATUS_PENDING.equals(charge.status)) {
+            LinearLayout actions = row();
+            MaterialButton approve = button("\u901a\u8fc7");
+            MaterialButton reject = outlineButton("\u62d2\u7edd");
+            actions.addView(approve, new LinearLayout.LayoutParams(0, dp(42), 1));
+            actions.addView(reject, new LinearLayout.LayoutParams(0, dp(42), 1));
+            card.addView(actions, topLp(8));
+            approve.setOnClickListener(v -> showApproveChargeDialog(charge));
+            reject.setOnClickListener(v -> showRejectChargeDialog(charge));
+        }
+        return card;
+    }
+
+    private View sentChargeCard(Charge charge) {
+        LinearLayout card = card();
+        card.addView(text(safe(charge.itemName), 17, true));
+        card.addView(text("\u7269\u54c1\u4e3b\u4eba: " + safe(charge.itemUserName) + " | \u72b6\u6001: " + safe(charge.status), 13, false));
+        card.addView(text("\u6211\u63d0\u4f9b: " + safe(charge.content), 14, false));
+        card.addView(text("\u7406\u7531: " + safe(charge.remark), 14, false));
+        if (STATUS_PASS.equals(charge.status)) card.addView(text("\u4ea4\u6362\u5730\u70b9: " + safe(charge.location) + "\n\u4ea4\u6362\u65f6\u95f4: " + safe(charge.shareTime), 13, false));
+        if (STATUS_REJECT.equals(charge.status)) card.addView(text("\u62d2\u7edd\u7406\u7531: " + safe(charge.reason), 13, false));
+        return card;
+    }
+
+    private void showApproveChargeDialog(Charge charge) {
+        LinearLayout form = formLayout();
+        EditText location = input("\u4ea4\u6362\u5730\u70b9");
+        EditText shareTime = input("\u4ea4\u6362\u65f6\u95f4");
+        form.addView(location); form.addView(shareTime);
+        new AlertDialog.Builder(this).setTitle("\u901a\u8fc7\u7533\u8bf7").setView(form)
+                .setNegativeButton("\u53d6\u6d88", null)
+                .setPositiveButton("\u786e\u5b9a", (d, w) -> {
+                    if (location.getText().toString().trim().isEmpty() || shareTime.getText().toString().trim().isEmpty()) {
+                        toast("\u4ea4\u6362\u5730\u70b9\u548c\u65f6\u95f4\u4e0d\u80fd\u4e3a\u7a7a");
+                        return;
+                    }
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("id", charge.id);
+                    body.put("status", STATUS_PASS);
+                    body.put("location", location.getText().toString().trim());
+                    body.put("shareTime", shareTime.getText().toString().trim());
+                    call(api.updateCharge(body), x -> { toast("\u5df2\u901a\u8fc7"); showReceivedCharges(); });
+                }).show();
+    }
+
+    private void showRejectChargeDialog(Charge charge) {
+        EditText reason = input("\u62d2\u7edd\u7406\u7531");
+        new AlertDialog.Builder(this).setTitle("\u62d2\u7edd\u7533\u8bf7").setView(reason)
+                .setNegativeButton("\u53d6\u6d88", null)
+                .setPositiveButton("\u786e\u5b9a", (d, w) -> {
+                    String value = reason.getText().toString().trim();
+                    if (value.isEmpty()) {
+                        toast("\u62d2\u7edd\u7406\u7531\u4e0d\u80fd\u4e3a\u7a7a");
+                        return;
+                    }
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("id", charge.id);
+                    body.put("status", STATUS_REJECT);
+                    body.put("reason", value);
+                    call(api.updateCharge(body), x -> { toast("\u5df2\u62d2\u7edd"); showReceivedCharges(); });
+                }).show();
     }
 
     private void showPublishChooser() {
@@ -380,7 +519,7 @@ public class MainActivity extends AppCompatActivity {
         upload.setOnClickListener(v -> { uploadTarget = img; imagePicker.launch("image/*"); });
         new AlertDialog.Builder(this).setTitle("\u53d1\u5e03\u5e16\u5b50").setView(scroll(form)).setNegativeButton("\u53d6\u6d88", null).setPositiveButton("\u53d1\u5e03", (d, w) -> {
             Map<String, Object> body = new HashMap<>(); body.put("title", title.getText().toString()); body.put("description", desc.getText().toString()); body.put("img", img.getText().toString()); body.put("content", content.getText().toString()); body.put("userId", currentUser.id);
-            call(api.addArticle(body), x -> { toast("\u53d1\u5e03\u6210\u529f"); homeItems = false; showHome(); });
+            call(api.addArticle(body), x -> { toast("\u5df2\u63d0\u4ea4\uff0c\u7b49\u5f85\u7ba1\u7406\u5458\u5ba1\u6838"); showMineArticles(); });
         }).show();
     }
 
@@ -391,9 +530,9 @@ public class MainActivity extends AppCompatActivity {
         form.addView(name); form.addView(desc); form.addView(req); form.addView(img); form.addView(upload); form.addView(cat);
         upload.setOnClickListener(v -> { uploadTarget = img; imagePicker.launch("image/*"); });
         new AlertDialog.Builder(this).setTitle("\u53d1\u5e03\u7269\u54c1").setView(scroll(form)).setNegativeButton("\u53d6\u6d88", null).setPositiveButton("\u53d1\u5e03", (d, w) -> {
-            Map<String, Object> body = new HashMap<>(); body.put("name", name.getText().toString()); body.put("description", desc.getText().toString()); body.put("requirement", req.getText().toString()); body.put("img", img.getText().toString()); body.put("userId", currentUser.id); body.put("status", true);
+            Map<String, Object> body = new HashMap<>(); body.put("name", name.getText().toString()); body.put("description", desc.getText().toString()); body.put("requirement", req.getText().toString()); body.put("img", img.getText().toString()); body.put("userId", currentUser.id); body.put("status", false);
             try { body.put("categoryId", Integer.parseInt(cat.getText().toString())); } catch (Exception ignored) {}
-            call(api.addItem(body), x -> { toast("\u53d1\u5e03\u6210\u529f"); homeItems = true; showHome(); });
+            call(api.addItem(body), x -> { toast("\u5df2\u63d0\u4ea4\uff0c\u7b49\u5f85\u7ba1\u7406\u5458\u5ba1\u6838"); showMineItems(); });
         }).show();
     }
 
@@ -454,9 +593,68 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }).show();
     }
-    private void showMineArticles() { LinearLayout p = verticalPage(); p.addView(titleBar("\u6211\u7684\u5e16\u5b50")); LinearLayout list = listBox(p); setPage(scroll(p)); loadArticles(list, currentUser.id, null, false); }
-    private void showMineItems() { LinearLayout p = verticalPage(); p.addView(titleBar("\u6211\u7684\u7269\u54c1")); LinearLayout list = listBox(p); setPage(scroll(p)); loadItems(list, currentUser.id, null, null, false); }
+    private void showMineArticles() {
+        LinearLayout p = verticalPage(); p.addView(titleBar("\u6211\u7684\u5e16\u5b50"));
+        LinearLayout list = listBox(p); setPage(scroll(p));
+        call(api.articlePage(1, 50, null, null, currentUser.id, currentUser.id), page -> {
+            list.removeAllViews();
+            if (page.list == null || page.list.isEmpty()) list.addView(empty("\u6682\u65e0\u5e16\u5b50"));
+            else for (Article article : page.list) list.addView(mineArticleCard(article));
+        });
+    }
+
+    private void showMineItems() {
+        LinearLayout p = verticalPage(); p.addView(titleBar("\u6211\u7684\u7269\u54c1"));
+        LinearLayout list = listBox(p); setPage(scroll(p));
+        call(api.itemPage(1, 50, null, null, null, null, currentUser.id, currentUser.id), page -> {
+            list.removeAllViews();
+            if (page.list == null || page.list.isEmpty()) list.addView(empty("\u6682\u65e0\u7269\u54c1"));
+            else for (Item item : page.list) list.addView(mineItemCard(item));
+        });
+    }
     private void showCollects() { LinearLayout p = verticalPage(); p.addView(titleBar("\u6211\u7684\u6536\u85cf\u5939")); LinearLayout list = listBox(p); setPage(scroll(p)); loadItems(list, null, null, null, true); }
+
+    private View mineArticleCard(Article article) {
+        LinearLayout card = card();
+        card.addView(text(article.title, 18, true));
+        card.addView(text("\u5ba1\u6838\u72b6\u6001: " + safe(article.status) + " | \u53d1\u5e03\u65f6\u95f4: " + safe(article.time), 13, false));
+        if (STATUS_REJECT.equals(article.status)) card.addView(text("\u62d2\u7edd\u7406\u7531: " + safe(article.reason), 13, false));
+        card.addView(text(safe(article.description), 14, false));
+        MaterialButton detail = outlineButton("\u67e5\u770b\u8be6\u60c5");
+        card.addView(detail, topLp(8));
+        detail.setOnClickListener(v -> showArticleDetail(article));
+        return card;
+    }
+
+    private View mineItemCard(Item item) {
+        LinearLayout card = card();
+        card.addView(image(item.img, 120));
+        card.addView(text(item.name, 18, true));
+        card.addView(text("\u5ba1\u6838\u72b6\u6001: " + safe(item.checkStatus), 13, false));
+        if (STATUS_REJECT.equals(item.checkStatus)) card.addView(text("\u62d2\u7edd\u7406\u7531: " + safe(item.reason), 13, false));
+        card.addView(text("\u4e0a\u67b6\u72b6\u6001: " + (Boolean.TRUE.equals(item.status) ? "\u5df2\u4e0a\u67b6" : "\u672a\u4e0a\u67b6"), 13, false));
+        card.addView(text(safe(item.description), 14, false));
+        LinearLayout actions = row();
+        MaterialButton detail = outlineButton("\u8be6\u60c5");
+        MaterialButton status = STATUS_PASS.equals(item.checkStatus)
+                ? (Boolean.TRUE.equals(item.status) ? outlineButton("\u4e0b\u67b6") : button("\u4e0a\u67b6"))
+                : outlineButton("\u5ba1\u6838\u540e\u53ef\u4e0a\u67b6");
+        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
+        actions.addView(status, new LinearLayout.LayoutParams(0, dp(42), 1));
+        card.addView(actions, topLp(8));
+        detail.setOnClickListener(v -> showItemDetail(item));
+        status.setOnClickListener(v -> {
+            if (!STATUS_PASS.equals(item.checkStatus)) {
+                toast("\u7269\u54c1\u5c1a\u672a\u901a\u8fc7\u5ba1\u6838\uff0c\u4e0d\u80fd\u4e0a\u67b6");
+                return;
+            }
+            Map<String, Object> body = new HashMap<>();
+            body.put("id", item.id);
+            body.put("status", !Boolean.TRUE.equals(item.status));
+            call(api.updateItemStatus(body), x -> { toast("\u72b6\u6001\u5df2\u66f4\u65b0"); showMineItems(); });
+        });
+        return card;
+    }
 
     private <T> void call(Call<ApiResponse<T>> call, Consumer<T> ok) {
         call.enqueue(new Callback<ApiResponse<T>>() {

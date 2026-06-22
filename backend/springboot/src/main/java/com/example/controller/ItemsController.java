@@ -28,12 +28,18 @@ public class ItemsController {
 
     @PutMapping("/updateStatus")
     public Result updateStatus(@RequestBody Items items) {
-        itemsService.updateById(items);
+        itemsService.updateStatus(items);
         return Result.success();
     }
 
     @PutMapping("/update")
     public Result updateById(@RequestBody Items items) {
+        itemsService.updateByUser(items);
+        return Result.success();
+    }
+
+    @PutMapping("/updateForAdmin")
+    public Result updateByIdForAdmin(@RequestBody Items items) {
         itemsService.updateById(items);
         return Result.success();
     }

@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Backend build outputs
+backend/springboot/target/
+backend/springboot/files/
+
+# IDE state
+.idea/

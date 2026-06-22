@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import com.example.entity.Article;
 import com.example.entity.Comments;
 import com.example.entity.User;
+import com.example.exception.CustomException;
 import com.example.mapper.ArticleMapper;
 import com.example.mapper.CommentsMapper;
 import com.example.mapper.UserMapper;
@@ -27,6 +28,9 @@ public class CommentsService {
     private NotificationService notificationService;
 
     public void add(Comments comments) {
+        if (comments.getContent() == null || comments.getContent().trim().length() < 2) {
+            throw new CustomException("\u8bc4\u8bba\u81f3\u5c11\u9700\u89812\u4e2a\u5b57");
+        }
         comments.setTime(DateUtil.now());
         commentsMapper.insert(comments);
         Article article = articleMapper.selectById(comments.getArticleId(), comments.getUserId());

@@ -10,6 +10,7 @@ public class Article {
     public Integer userId;
     public String userName;
     public String status;
+    public String reason;
     public Integer likeCount;
     public Integer commentCount;
     public Integer likedId;

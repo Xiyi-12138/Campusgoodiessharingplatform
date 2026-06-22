@@ -11,6 +11,7 @@ public class Item {
     public String userName;
     public String time;
     public String checkStatus;
+    public String reason;
     public Integer categoryId;
     public String categoryName;
     public Integer collectId;

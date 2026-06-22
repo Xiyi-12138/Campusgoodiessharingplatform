@@ -39,6 +39,9 @@ public interface ApiService {
     @DELETE("items/delete/{id}")
     Call<ApiResponse<Object>> deleteItem(@Path("id") int id);
 
+    @PUT("items/updateStatus")
+    Call<ApiResponse<Object>> updateItemStatus(@Body Map<String, Object> body);
+
     @GET("category/selectAll")
     Call<ApiResponse<java.util.List<Category>>> categories();
 
@@ -62,6 +65,15 @@ public interface ApiService {
 
     @DELETE("comments/delete/{id}")
     Call<ApiResponse<Object>> deleteComment(@Path("id") int id);
+
+    @GET("charge/selectPage")
+    Call<ApiResponse<PageResult<Charge>>> chargePage(@Query("pageNum") int pageNum, @Query("pageSize") int pageSize, @Query("userId") Integer userId, @Query("itemUserid") Integer itemUserid, @Query("status") String status);
+
+    @POST("charge/add")
+    Call<ApiResponse<Object>> addCharge(@Body Map<String, Object> body);
+
+    @PUT("charge/update")
+    Call<ApiResponse<Object>> updateCharge(@Body Map<String, Object> body);
 
     @GET("notice/selectPage")
     Call<ApiResponse<PageResult<Notice>>> notices(@Query("pageNum") int pageNum, @Query("pageSize") int pageSize);

@@ -15,11 +15,12 @@
             <if test="itemName != null"> and items.name like concat('%', #{itemName}, '%')</if>
             <if test="userId != null"> and charge.user_id = #{userId}</if>
             <if test="itemUserid != null"> and charge.item_userid = #{itemUserid}</if>
+            <if test="status != null and status != ''"> and charge.status = #{status}</if>
         </where>
         order by charge.id desc
     </select>
 
-    <insert id="insert" parameterType="com.example.entity.Charge" useGeneratedKeys="true">
+    <insert id="insert" parameterType="com.example.entity.Charge" useGeneratedKeys="true" keyProperty="id">
         insert into `charge`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">id,</if>
