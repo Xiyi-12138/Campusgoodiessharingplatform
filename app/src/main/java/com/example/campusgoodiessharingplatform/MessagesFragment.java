@@ -45,6 +45,9 @@ public class MessagesFragment extends BaseFragment {
                 card.setOnClickListener(v -> call(api().readNotification(n.id), x -> renderNotifications()));
                 list.addView(card);
             }
+        }, error -> {
+            list.removeAllViews();
+            list.addView(empty("信息接口不可用，请启动 Campusgoodiessharingplatform/backend/springboot 后端\n" + error));
         });
     }
 

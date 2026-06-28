@@ -57,17 +57,21 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected <T> void call(Call<ApiResponse<T>> call, Consumer<T> ok) {
+        call(call, ok, this::toast);
+    }
+
+    protected <T> void call(Call<ApiResponse<T>> call, Consumer<T> ok, Consumer<String> fail) {
         call.enqueue(new Callback<ApiResponse<T>>() {
             @Override
             public void onResponse(Call<ApiResponse<T>> call, Response<ApiResponse<T>> response) {
                 ApiResponse<T> body = response.body();
                 if (body != null && body.ok()) ok.accept(body.data);
-                else toast(body == null ? "request failed" : body.msg);
+                else fail.accept(body == null ? "request failed: HTTP " + response.code() : body.msg);
             }
 
             @Override
             public void onFailure(Call<ApiResponse<T>> call, Throwable t) {
-                toast("network error: " + t.getMessage());
+                fail.accept("network error: " + t.getMessage());
             }
         });
     }
