@@ -6,7 +6,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -17,22 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HotFragment extends BaseFragment {
-    private FrameLayout root;
+    private View root;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        root = (FrameLayout) inflater.inflate(R.layout.fragment_hot, container, false);
+        root = inflater.inflate(R.layout.fragment_hot, container, false);
         render();
         return root;
     }
 
     private void render() {
-        LinearLayout page = verticalPage();
-        page.addView(titleBar("\u70ed\u95e8"));
-        LinearLayout notices = listBox(page);
-        page.addView(sectionTitle("\u5e16\u5b50\u70b9\u8d5e\u699c"));
-        LinearLayout rank = listBox(page);
-        setRoot(root, scroll(page));
+        LinearLayout notices = root.findViewById(R.id.hot_notices);
+        LinearLayout rank = root.findViewById(R.id.hot_rank);
         call(api().notices(1, 5), p -> {
             notices.removeAllViews();
             if (p.list != null) for (Notice n : p.list) notices.addView(simpleCard(n.title, safe(n.content) + "\n" + safe(n.time)));

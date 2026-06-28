@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class ArticleDetailFragment extends BaseFragment {
     private static final String ARG_ARTICLE_ID = "article_id";
-    private FrameLayout root;
+    private View root;
     private int articleId;
 
     public static ArticleDetailFragment newInstance(int articleId) {
@@ -33,7 +33,7 @@ public class ArticleDetailFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        root = (FrameLayout) inflater.inflate(R.layout.fragment_article_detail, container, false);
+        root = inflater.inflate(R.layout.fragment_article_detail, container, false);
         articleId = getArguments() == null ? 0 : getArguments().getInt(ARG_ARTICLE_ID);
         loadArticle();
         return root;
@@ -44,41 +44,24 @@ public class ArticleDetailFragment extends BaseFragment {
     }
 
     private void render(Article article) {
-        LinearLayout page = verticalPage();
-        LinearLayout header = row();
-        header.setPadding(dp(16), dp(12), dp(16), dp(8));
-        MaterialButton back = outlineButton("\u8fd4\u56de");
-        header.addView(back, new LinearLayout.LayoutParams(dp(88), dp(42)));
-        header.addView(text("\u5e16\u5b50\u8be6\u60c5", 22, true), new LinearLayout.LayoutParams(0, -2, 1));
-        page.addView(header);
-
-        LinearLayout box = formLayout();
-        box.setBackgroundColor(0xffffffff);
-        box.addView(image(article.img, 210));
-        box.addView(text(article.title, 21, true));
-        box.addView(text("\u53d1\u5e03\u65f6\u95f4: " + safe(article.time), 12, false));
-        box.addView(text("\u8d5e " + intValue(article.likeCount) + " | \u8bc4\u8bba " + intValue(article.commentCount), 13, false));
-        TextView content = text("", 15, false);
+        MaterialButton back = root.findViewById(R.id.article_back);
+        ImageView image = root.findViewById(R.id.article_image);
+        TextView title = root.findViewById(R.id.article_title);
+        TextView time = root.findViewById(R.id.article_time);
+        TextView stats = root.findViewById(R.id.article_stats);
+        TextView content = root.findViewById(R.id.article_content);
+        LinearLayout contentImages = root.findViewById(R.id.article_content_images);
         String articleContent = article.content == null ? safe(article.description) : article.content;
+        if (article.img != null && !article.img.isEmpty()) com.bumptech.glide.Glide.with(this).load(normalizeUrl(article.img)).into(image);
+        title.setText(article.title);
+        time.setText("\u53d1\u5e03\u65f6\u95f4: " + safe(article.time));
+        stats.setText("\u8d5e " + intValue(article.likeCount) + " | \u8bc4\u8bba " + intValue(article.commentCount));
         content.setText(Html.fromHtml(stripImages(articleContent), Html.FROM_HTML_MODE_LEGACY));
-        box.addView(sectionTitle("\u6587\u7ae0\u6b63\u6587"));
-        addContentImages(box, articleContent);
-        box.addView(content);
-        page.addView(box);
-
-        LinearLayout commentBox = formLayout();
-        commentBox.setBackgroundColor(0xfff6f7f9);
-        commentBox.addView(sectionTitle("\u8bc4\u8bba\u533a"));
-        EditText comment = input("\u5199\u8bc4\u8bba");
-        MaterialButton send = button("\u53d1\u5e03\u8bc4\u8bba");
-        commentBox.addView(comment, topLp(6));
-        commentBox.addView(send, topLp(8));
-        LinearLayout comments = new LinearLayout(requireContext());
-        comments.setOrientation(LinearLayout.VERTICAL);
-        commentBox.addView(comments, topLp(10));
-        page.addView(commentBox);
-
-        setRoot(root, scroll(page));
+        contentImages.removeAllViews();
+        addContentImages(contentImages, articleContent);
+        EditText comment = root.findViewById(R.id.comment_input);
+        MaterialButton send = root.findViewById(R.id.comment_send);
+        LinearLayout comments = root.findViewById(R.id.comment_list);
         back.setOnClickListener(v -> host().openHome());
         send.setOnClickListener(v -> {
             String contentValue = comment.getText().toString().trim();

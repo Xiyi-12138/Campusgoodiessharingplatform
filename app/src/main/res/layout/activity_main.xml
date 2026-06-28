@@ -41,6 +41,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_publish"
+
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginStart="6dp"

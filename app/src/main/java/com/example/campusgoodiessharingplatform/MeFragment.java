@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -21,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MeFragment extends BaseFragment {
-    private FrameLayout root;
+    private View root;
     private EditText uploadTarget;
     private ActivityResultLauncher<String> imagePicker;
 
@@ -33,7 +34,7 @@ public class MeFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        root = (FrameLayout) inflater.inflate(R.layout.fragment_me, container, false);
+        root = inflater.inflate(R.layout.fragment_me, container, false);
         render();
         return root;
     }
@@ -43,21 +44,20 @@ public class MeFragment extends BaseFragment {
     }
 
     private void render() {
-        LinearLayout page = verticalPage();
-        page.addView(titleBar("\u6211\u7684"));
-        page.addView(avatar(currentUser().avatar, 76), topLp(4));
-        page.addView(simpleCard(safe(currentUser().name), "\u8d26\u53f7: " + safe(currentUser().username) + "\n\u624b\u673a: " + safe(currentUser().phone) + "\n\u90ae\u7bb1: " + safe(currentUser().email)));
-        MaterialButton profile = button("\u7f16\u8f91\u4e2a\u4eba\u4fe1\u606f");
-        MaterialButton myArticles = outlineButton("\u6211\u7684\u5e16\u5b50");
-        MaterialButton myItems = outlineButton("\u6211\u7684\u7269\u54c1");
-        MaterialButton collects = outlineButton("\u6211\u7684\u6536\u85cf\u5939");
-        MaterialButton logout = outlineButton("\u9000\u51fa\u767b\u5f55");
-        page.addView(profile, topLp(8));
-        page.addView(myArticles, topLp(8));
-        page.addView(myItems, topLp(8));
-        page.addView(collects, topLp(8));
-        page.addView(logout, topLp(16));
-        setRoot(root, scroll(page));
+        FrameLayout avatarBox = root.findViewById(R.id.me_avatar_container);
+        avatarBox.removeAllViews();
+        avatarBox.addView(avatar(currentUser().avatar, 76));
+        TextView name = root.findViewById(R.id.me_name);
+        TextView info = root.findViewById(R.id.me_info);
+        name.setText(safe(currentUser().name));
+        info.setText("\u8d26\u53f7: " + safe(currentUser().username) + "\n\u624b\u673a: " + safe(currentUser().phone) + "\n\u90ae\u7bb1: " + safe(currentUser().email));
+        MaterialButton profile = root.findViewById(R.id.me_edit_profile);
+        MaterialButton myArticles = root.findViewById(R.id.me_articles);
+        MaterialButton myItems = root.findViewById(R.id.me_items);
+        MaterialButton collects = root.findViewById(R.id.me_collects);
+        MaterialButton logout = root.findViewById(R.id.me_logout);
+        LinearLayout list = root.findViewById(R.id.me_content_list);
+        list.removeAllViews();
         profile.setOnClickListener(v -> showProfileDialog());
         myArticles.setOnClickListener(v -> showMineArticles());
         myItems.setOnClickListener(v -> showMineItems());
@@ -107,10 +107,9 @@ public class MeFragment extends BaseFragment {
     }
 
     public void showMineArticles() {
-        LinearLayout p = verticalPage();
-        p.addView(titleBar("\u6211\u7684\u5e16\u5b50"));
-        LinearLayout list = listBox(p);
-        setRoot(root, scroll(p));
+        TextView title = root.findViewById(R.id.me_title);
+        title.setText("\u6211\u7684\u5e16\u5b50");
+        LinearLayout list = root.findViewById(R.id.me_content_list);
         call(api().articlePage(1, 50, null, null, currentUser().id, currentUser().id), page -> {
             list.removeAllViews();
             if (page.list == null || page.list.isEmpty()) list.addView(empty("\u6682\u65e0\u5e16\u5b50"));
@@ -119,10 +118,9 @@ public class MeFragment extends BaseFragment {
     }
 
     public void showMineItems() {
-        LinearLayout p = verticalPage();
-        p.addView(titleBar("\u6211\u7684\u7269\u54c1"));
-        LinearLayout list = listBox(p);
-        setRoot(root, scroll(p));
+        TextView title = root.findViewById(R.id.me_title);
+        title.setText("\u6211\u7684\u7269\u54c1");
+        LinearLayout list = root.findViewById(R.id.me_content_list);
         call(api().itemPage(1, 50, null, null, null, null, currentUser().id, currentUser().id), page -> {
             list.removeAllViews();
             if (page.list == null || page.list.isEmpty()) list.addView(empty("\u6682\u65e0\u7269\u54c1"));
@@ -131,10 +129,9 @@ public class MeFragment extends BaseFragment {
     }
 
     private void showCollects() {
-        LinearLayout p = verticalPage();
-        p.addView(titleBar("\u6211\u7684\u6536\u85cf\u5939"));
-        LinearLayout list = listBox(p);
-        setRoot(root, scroll(p));
+        TextView title = root.findViewById(R.id.me_title);
+        title.setText("\u6211\u7684\u6536\u85cf\u5939");
+        LinearLayout list = root.findViewById(R.id.me_content_list);
         call(api().itemPage(1, 50, null, true, STATUS_PASS, null, null, currentUser().id), page -> {
             list.removeAllViews();
             if (page.list == null || page.list.isEmpty()) list.addView(empty("\u6682\u65e0\u6536\u85cf"));

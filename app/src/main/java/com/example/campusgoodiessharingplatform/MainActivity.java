@@ -110,25 +110,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showLogin() {
-        LinearLayout root = verticalPage();
-        root.setGravity(Gravity.CENTER);
-        root.setPadding(dp(28), dp(28), dp(28), dp(28));
-        TextView title = text("\u6821\u56ed\u597d\u7269", 30, true);
-        title.setGravity(Gravity.CENTER);
-        TextView sub = text("\u767b\u5f55\u540e\u53d1\u73b0\u3001\u5206\u4eab\u3001\u4ea4\u6362\u6821\u56ed\u597d\u7269", 14, false);
-        sub.setGravity(Gravity.CENTER);
-        EditText username = input("\u8d26\u53f7");
-        EditText password = input("\u5bc6\u7801");
-        password.setInputType(0x00000081);
-        MaterialButton login = button("\u767b\u5f55");
-        MaterialButton register = outlineButton("\u6ce8\u518c\u65b0\u7528\u6237");
-        root.addView(title, lp(-1, -2));
-        root.addView(sub, lp(-1, -2));
-        root.addView(username, topLp(16));
-        root.addView(password, topLp(10));
-        root.addView(login, topLp(16));
-        root.addView(register, topLp(8));
-        setContentView(root);
+        setContentView(R.layout.activity_login);
+        EditText username = findViewById(R.id.login_username);
+        EditText password = findViewById(R.id.login_password);
+        MaterialButton login = findViewById(R.id.login_button);
+        MaterialButton register = findViewById(R.id.register_button);
         login.setOnClickListener(v -> doLogin(username.getText().toString(), password.getText().toString()));
         register.setOnClickListener(v -> showRegisterDialog());
     }
@@ -146,17 +132,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showRegisterDialog() {
-        LinearLayout form = formLayout();
-        EditText username = input("\u8d26\u53f7");
-        EditText password = input("\u5bc6\u7801");
-        EditText name = input("\u6635\u79f0");
-        EditText phone = input("\u624b\u673a\u53f7");
-        EditText email = input("\u90ae\u7bb1");
-        form.addView(username);
-        form.addView(password);
-        form.addView(name);
-        form.addView(phone);
-        form.addView(email);
+        android.view.View form = getLayoutInflater().inflate(R.layout.dialog_register, null);
+        EditText username = form.findViewById(R.id.register_username);
+        EditText password = form.findViewById(R.id.register_password);
+        EditText name = form.findViewById(R.id.register_name);
+        EditText phone = form.findViewById(R.id.register_phone);
+        EditText email = form.findViewById(R.id.register_email);
         new AlertDialog.Builder(this).setTitle("\u6ce8\u518c")
                 .setView(form)
                 .setNegativeButton("\u53d6\u6d88", null)
@@ -180,21 +161,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showPublishArticle() {
-        LinearLayout form = formLayout();
-        EditText title = input("\u6807\u9898");
-        EditText desc = input("\u7b80\u4ecb");
-        EditText img = input("\u5c01\u9762\u56fe\u7247 URL");
-        EditText content = input("\u6b63\u6587\u5185\u5bb9");
-        content.setMinLines(5);
-        MaterialButton upload = outlineButton("\u4e0a\u4f20\u5c01\u9762\u56fe\u7247");
-        form.addView(title);
-        form.addView(desc);
-        form.addView(img);
-        form.addView(upload);
-        form.addView(content);
+        android.view.View form = getLayoutInflater().inflate(R.layout.dialog_publish_article, null);
+        EditText title = form.findViewById(R.id.publish_article_title);
+        EditText desc = form.findViewById(R.id.publish_article_desc);
+        EditText img = form.findViewById(R.id.publish_article_img);
+        EditText content = form.findViewById(R.id.publish_article_content);
+        MaterialButton upload = form.findViewById(R.id.publish_article_upload);
         upload.setOnClickListener(v -> { uploadTarget = img; imagePicker.launch("image/*"); });
         new AlertDialog.Builder(this).setTitle("\u53d1\u5e03\u5e16\u5b50")
-                .setView(scroll(form))
+                .setView(form)
                 .setNegativeButton("\u53d6\u6d88", null)
                 .setPositiveButton("\u53d1\u5e03", (d, w) -> {
                     Map<String, Object> body = new HashMap<>();
@@ -211,22 +186,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showPublishItem() {
-        LinearLayout form = formLayout();
-        EditText name = input("\u7269\u54c1\u540d\u79f0");
-        EditText desc = input("\u63cf\u8ff0");
-        EditText req = input("\u4ea4\u6362\u6761\u4ef6");
-        EditText img = input("\u56fe\u7247 URL");
-        EditText cat = input("\u5206\u7c7bID");
-        MaterialButton upload = outlineButton("\u4e0a\u4f20\u7269\u54c1\u56fe\u7247");
-        form.addView(name);
-        form.addView(desc);
-        form.addView(req);
-        form.addView(img);
-        form.addView(upload);
-        form.addView(cat);
+        android.view.View form = getLayoutInflater().inflate(R.layout.dialog_publish_item, null);
+        EditText name = form.findViewById(R.id.publish_item_name);
+        EditText desc = form.findViewById(R.id.publish_item_desc);
+        EditText req = form.findViewById(R.id.publish_item_requirement);
+        EditText img = form.findViewById(R.id.publish_item_img);
+        EditText cat = form.findViewById(R.id.publish_item_category);
+        MaterialButton upload = form.findViewById(R.id.publish_item_upload);
         upload.setOnClickListener(v -> { uploadTarget = img; imagePicker.launch("image/*"); });
         new AlertDialog.Builder(this).setTitle("\u53d1\u5e03\u7269\u54c1")
-                .setView(scroll(form))
+                .setView(form)
                 .setNegativeButton("\u53d6\u6d88", null)
                 .setPositiveButton("\u53d1\u5e03", (d, w) -> {
                     Map<String, Object> body = new HashMap<>();

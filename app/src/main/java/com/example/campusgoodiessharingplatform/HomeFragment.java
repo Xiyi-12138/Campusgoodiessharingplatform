@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.example.campusgoodiessharingplatform.model.Article;
@@ -19,36 +18,26 @@ import java.util.List;
 import java.util.Map;
 
 public class HomeFragment extends BaseFragment {
-    private FrameLayout root;
+    private View root;
     private boolean homeItems = true;
     private String searchKeyword;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        root = (FrameLayout) inflater.inflate(R.layout.fragment_home, container, false);
+        root = inflater.inflate(R.layout.fragment_home, container, false);
         render();
         return root;
     }
 
     private void render() {
-        LinearLayout page = verticalPage();
-        LinearLayout header = row();
-        header.setPadding(dp(16), dp(14), dp(16), dp(8));
-        header.addView(text("\u9996\u9875", 24, true), new LinearLayout.LayoutParams(0, -2, 1));
-        MaterialButton search = outlineButton("\u641c\u7d22");
-        header.addView(search);
-        page.addView(header);
-
-        LinearLayout tabs = row();
-        tabs.setPadding(dp(16), 0, dp(16), dp(10));
-        MaterialButton market = homeItems ? button("\u5e02\u96c6") : outlineButton("\u5e02\u96c6");
-        MaterialButton share = homeItems ? outlineButton("\u5206\u4eab") : button("\u5206\u4eab");
-        tabs.addView(market, new LinearLayout.LayoutParams(0, dp(44), 1));
-        tabs.addView(share, new LinearLayout.LayoutParams(0, dp(44), 1));
-        page.addView(tabs);
-
-        LinearLayout list = listBox(page);
-        setRoot(root, scroll(page));
+        MaterialButton search = root.findViewById(R.id.home_search);
+        MaterialButton market = root.findViewById(R.id.tab_market);
+        MaterialButton share = root.findViewById(R.id.tab_share);
+        LinearLayout list = root.findViewById(R.id.home_list);
+        market.setText("\u5e02\u96c6");
+        share.setText("\u5206\u4eab");
+        market.setStrokeWidth(homeItems ? 0 : dp(1));
+        share.setStrokeWidth(homeItems ? dp(1) : 0);
         market.setOnClickListener(v -> { homeItems = true; searchKeyword = null; render(); });
         share.setOnClickListener(v -> { homeItems = false; searchKeyword = null; render(); });
         search.setOnClickListener(v -> showSearchDialog());
