@@ -152,9 +152,14 @@ public class MeFragment extends BaseFragment {
         card.addView(text("\u5ba1\u6838\u72b6\u6001: " + safe(article.status) + " | \u53d1\u5e03\u65f6\u95f4: " + safe(article.time), 13, false));
         if (STATUS_REJECT.equals(article.status)) card.addView(text("\u62d2\u7edd\u7406\u7531: " + safe(article.reason), 13, false));
         card.addView(text(safe(article.description), 14, false));
+        LinearLayout actions = row();
         MaterialButton detail = outlineButton("\u67e5\u770b\u8be6\u60c5");
-        card.addView(detail, topLp(8));
+        MaterialButton delete = outlineButton("\u5220\u9664");
+        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
+        actions.addView(delete, new LinearLayout.LayoutParams(0, dp(42), 1));
+        card.addView(actions, topLp(8));
         detail.setOnClickListener(v -> host().openArticleDetail(article.id));
+        delete.setOnClickListener(v -> confirmDeleteArticle(article));
         return card;
     }
 
@@ -171,10 +176,13 @@ public class MeFragment extends BaseFragment {
         MaterialButton status = STATUS_PASS.equals(item.checkStatus)
                 ? (Boolean.TRUE.equals(item.status) ? outlineButton("\u4e0b\u67b6") : button("\u4e0a\u67b6"))
                 : outlineButton("\u5ba1\u6838\u540e\u53ef\u4e0a\u67b6");
+        MaterialButton delete = outlineButton("\u5220\u9664");
         actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
         actions.addView(status, new LinearLayout.LayoutParams(0, dp(42), 1));
+        actions.addView(delete, new LinearLayout.LayoutParams(0, dp(42), 1));
         card.addView(actions, topLp(8));
         detail.setOnClickListener(v -> showItemDetail(item));
+        delete.setOnClickListener(v -> confirmDeleteItem(item));
         status.setOnClickListener(v -> {
             if (!STATUS_PASS.equals(item.checkStatus)) {
                 toast("\u7269\u54c1\u5c1a\u672a\u901a\u8fc7\u5ba1\u6838\uff0c\u4e0d\u80fd\u4e0a\u67b6");
@@ -193,10 +201,58 @@ public class MeFragment extends BaseFragment {
         card.addView(image(item.img, 140));
         card.addView(text(item.name, 18, true));
         card.addView(text(safe(item.description), 14, false));
+        LinearLayout actions = row();
         MaterialButton detail = outlineButton("\u8be6\u60c5");
-        card.addView(detail, topLp(8));
+        MaterialButton uncollect = outlineButton("\u53d6\u6d88\u6536\u85cf");
+        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
+        actions.addView(uncollect, new LinearLayout.LayoutParams(0, dp(42), 1));
+        card.addView(actions, topLp(8));
         detail.setOnClickListener(v -> showItemDetail(item));
+        uncollect.setOnClickListener(v -> confirmUncollectItem(item));
         return card;
+    }
+
+    private void confirmDeleteArticle(Article article) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("\u5220\u9664\u5e16\u5b50")
+                .setMessage("\u786e\u5b9a\u5220\u9664\u8fd9\u7bc7\u5e16\u5b50\u5417\uff1f")
+                .setNegativeButton("\u53d6\u6d88", null)
+                .setPositiveButton("\u5220\u9664", (dialog, which) ->
+                        call(api().deleteArticle(article.id), x -> {
+                            toast("\u5df2\u5220\u9664");
+                            showMineArticles();
+                        }))
+                .show();
+    }
+
+    private void confirmDeleteItem(Item item) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("\u5220\u9664\u7269\u54c1")
+                .setMessage("\u786e\u5b9a\u5220\u9664\u8fd9\u4ef6\u7269\u54c1\u5417\uff1f")
+                .setNegativeButton("\u53d6\u6d88", null)
+                .setPositiveButton("\u5220\u9664", (dialog, which) ->
+                        call(api().deleteItem(item.id), x -> {
+                            toast("\u5df2\u5220\u9664");
+                            showMineItems();
+                        }))
+                .show();
+    }
+
+    private void confirmUncollectItem(Item item) {
+        if (item.collectId == null) {
+            toast("\u6536\u85cf\u8bb0\u5f55\u4e0d\u5b58\u5728");
+            return;
+        }
+        new AlertDialog.Builder(requireContext())
+                .setTitle("\u53d6\u6d88\u6536\u85cf")
+                .setMessage("\u786e\u5b9a\u5c06\u8fd9\u4ef6\u7269\u54c1\u79fb\u51fa\u6536\u85cf\u5939\u5417\uff1f")
+                .setNegativeButton("\u53d6\u6d88", null)
+                .setPositiveButton("\u786e\u5b9a", (dialog, which) ->
+                        call(api().uncollect(item.collectId), x -> {
+                            toast("\u5df2\u53d6\u6d88\u6536\u85cf");
+                            showCollects();
+                        }))
+                .show();
     }
 
     private void updateTabState(MaterialButton selected) {
