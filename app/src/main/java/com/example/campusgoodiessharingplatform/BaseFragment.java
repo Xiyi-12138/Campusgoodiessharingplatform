@@ -35,10 +35,10 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public abstract class BaseFragment extends Fragment {
-    protected static final String ROLE_USER = "\u666e\u901a\u7528\u6237";
-    protected static final String STATUS_PASS = "\u901a\u8fc7";
-    protected static final String STATUS_PENDING = "\u5f85\u5ba1\u6838";
-    protected static final String STATUS_REJECT = "\u62d2\u7edd";
+    protected static final String ROLE_USER = "普通用户";
+    protected static final String STATUS_PASS = "通过";
+    protected static final String STATUS_PENDING = "待审核";
+    protected static final String STATUS_REJECT = "拒绝";
 
     protected MainActivity host() {
         return (MainActivity) requireActivity();
@@ -87,7 +87,7 @@ public abstract class BaseFragment extends Fragment {
             MultipartBody.Part part = MultipartBody.Part.createFormData("file", "upload.jpg", body);
             call(api().upload(part), url -> {
                 target.setText(url);
-                toast("\u4e0a\u4f20\u6210\u529f");
+                toast("上传成功");
             });
         } catch (Exception e) {
             toast("upload failed: " + e.getMessage());
@@ -98,12 +98,12 @@ public abstract class BaseFragment extends Fragment {
         LinearLayout box = formLayout();
         box.addView(image(item.img, 220));
         box.addView(text(item.name, 20, true));
-        box.addView(text("\u5206\u7c7b: " + safe(item.categoryName) + " | \u6536\u85cf " + intValue(item.collectCount), 13, false));
-        box.addView(text("\u5ba1\u6838: " + safe(item.checkStatus) + " | \u4e0a\u67b6: " + (Boolean.TRUE.equals(item.status) ? "\u5df2\u4e0a\u67b6" : "\u672a\u4e0a\u67b6"), 13, false));
-        box.addView(text("\u63cf\u8ff0: " + safe(item.description), 15, false));
-        box.addView(text("\u4ea4\u6362\u6761\u4ef6: " + safe(item.requirement), 15, false));
-        box.addView(text("\u53d1\u5e03\u4eba: " + safe(item.userName), 13, false));
-        new AlertDialog.Builder(requireContext()).setTitle("\u7269\u54c1\u8be6\u60c5").setView(scroll(box)).setPositiveButton("\u5173\u95ed", null).show();
+        box.addView(text("分类: " + safe(item.categoryName) + " | 收藏 " + intValue(item.collectCount), 13, false));
+        box.addView(text("审核: " + safe(item.checkStatus) + " | 上架: " + (Boolean.TRUE.equals(item.status) ? "已上架" : "未上架"), 13, false));
+        box.addView(text("描述: " + safe(item.description), 15, false));
+        box.addView(text("交换条件: " + safe(item.requirement), 15, false));
+        box.addView(text("发布人: " + safe(item.userName), 13, false));
+        new AlertDialog.Builder(requireContext()).setTitle("物品详情").setView(scroll(box)).setPositiveButton("关闭", null).show();
     }
 
     protected ScrollView scroll(View child) {

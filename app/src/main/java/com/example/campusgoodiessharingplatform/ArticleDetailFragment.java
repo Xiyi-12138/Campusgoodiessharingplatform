@@ -54,26 +54,26 @@ public class ArticleDetailFragment extends BaseFragment {
         String articleContent = article.content == null ? safe(article.description) : article.content;
         if (article.img != null && !article.img.isEmpty()) com.bumptech.glide.Glide.with(this).load(normalizeUrl(article.img)).into(image);
         title.setText(article.title);
-        time.setText("\u53d1\u5e03\u65f6\u95f4: " + safe(article.time));
-        stats.setText("\u8d5e " + intValue(article.likeCount) + " | \u8bc4\u8bba " + intValue(article.commentCount));
+        time.setText("发布时间: " + safe(article.time));
+        stats.setText("赞 " + intValue(article.likeCount) + " | 评论 " + intValue(article.commentCount));
         content.setText(Html.fromHtml(stripImages(articleContent), Html.FROM_HTML_MODE_LEGACY));
         contentImages.removeAllViews();
         addContentImages(contentImages, articleContent);
         EditText comment = root.findViewById(R.id.comment_input);
         MaterialButton send = root.findViewById(R.id.comment_send);
         LinearLayout comments = root.findViewById(R.id.comment_list);
-        back.setOnClickListener(v -> host().openHome());
+        back.setOnClickListener(v -> host().openShareHome());
         send.setOnClickListener(v -> {
             String contentValue = comment.getText().toString().trim();
             if (contentValue.length() < 2) {
-                toast("\u8bc4\u8bba\u81f3\u5c11\u9700\u89812\u4e2a\u5b57");
+                toast("评论至少需要2个字");
                 return;
             }
             Map<String, Object> body = new HashMap<>();
             body.put("userId", currentUser().id);
             body.put("articleId", article.id);
             body.put("content", contentValue);
-            call(api().addComment(body), x -> { toast("\u8bc4\u8bba\u6210\u529f"); loadArticle(); });
+            call(api().addComment(body), x -> { toast("评论成功"); loadArticle(); });
         });
         loadArticleComments(comments, article);
     }
@@ -81,7 +81,7 @@ public class ArticleDetailFragment extends BaseFragment {
     private void loadArticleComments(LinearLayout comments, Article article) {
         call(api().comments(1, 20, article.id), page -> {
             comments.removeAllViews();
-            if (page.list == null || page.list.isEmpty()) comments.addView(empty("\u6682\u65e0\u8bc4\u8bba"));
+            if (page.list == null || page.list.isEmpty()) comments.addView(empty("暂无评论"));
             else for (Comment c : page.list) comments.addView(commentCard(c, article));
         });
     }
@@ -97,10 +97,10 @@ public class ArticleDetailFragment extends BaseFragment {
         if (currentUser().id != null && currentUser().id.equals(c.userId)) {
             card.setOnLongClickListener(v -> {
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("\u5220\u9664\u8bc4\u8bba")
-                        .setMessage("\u786e\u5b9a\u5220\u9664\u8fd9\u6761\u8bc4\u8bba\u5417\uff1f")
-                        .setNegativeButton("\u53d6\u6d88", null)
-                        .setPositiveButton("\u5220\u9664", (d, w) -> call(api().deleteComment(c.id), x -> { toast("\u5df2\u5220\u9664"); loadArticle(); }))
+                        .setTitle("删除评论")
+                        .setMessage("确定删除这条评论吗？")
+                        .setNegativeButton("取消", null)
+                        .setPositiveButton("删除", (d, w) -> call(api().deleteComment(c.id), x -> { toast("已删除"); loadArticle(); }))
                         .show();
                 return true;
             });

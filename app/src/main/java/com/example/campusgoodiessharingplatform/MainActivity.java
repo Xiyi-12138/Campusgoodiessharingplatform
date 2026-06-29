@@ -11,6 +11,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,13 +38,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String ROLE_USER = "\u666e\u901a\u7528\u6237";
+    private static final String ROLE_USER = "普通用户";
 
     private final ApiService api = ApiClient.service();
     private final Gson gson = new Gson();
     private User currentUser;
     private EditText uploadTarget;
     private ActivityResultLauncher<String> imagePicker;
+    private OnBackPressedCallback backPressedCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +76,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void openHome() {
         updateNavState(R.id.nav_home);
-        switchFragment(new HomeFragment());
+        switchFragment(HomeFragment.newInstance(true));
+    }
+
+    public void openShareHome() {
+        updateNavState(R.id.nav_home);
+        switchFragment(HomeFragment.newInstance(false));
     }
 
     public void openHot() {
@@ -99,12 +106,31 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMain() {
         setContentView(R.layout.activity_main);
+        setupBackPressedHandler();
         findViewById(R.id.nav_home).setOnClickListener(v -> openHome());
         findViewById(R.id.nav_hot).setOnClickListener(v -> openHot());
         findViewById(R.id.nav_publish).setOnClickListener(v -> showPublishChooser());
         findViewById(R.id.nav_messages).setOnClickListener(v -> openMessages());
         findViewById(R.id.nav_me).setOnClickListener(v -> openMe());
         openHome();
+    }
+
+    private void setupBackPressedHandler() {
+        if (backPressedCallback != null) return;
+        backPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Fragment current = getSupportFragmentManager().findFragmentById(R.id.content_container);
+                if (current instanceof ArticleDetailFragment) {
+                    openShareHome();
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, backPressedCallback);
     }
 
     private void switchFragment(Fragment fragment) {
@@ -157,24 +183,24 @@ public class MainActivity extends AppCompatActivity {
         EditText name = form.findViewById(R.id.register_name);
         EditText phone = form.findViewById(R.id.register_phone);
         EditText email = form.findViewById(R.id.register_email);
-        new AlertDialog.Builder(this).setTitle("\u6ce8\u518c")
+        new AlertDialog.Builder(this).setTitle("注册")
                 .setView(form)
-                .setNegativeButton("\u53d6\u6d88", null)
-                .setPositiveButton("\u6ce8\u518c", (d, w) -> {
+                .setNegativeButton("取消", null)
+                .setPositiveButton("注册", (d, w) -> {
                     Map<String, Object> body = new HashMap<>();
                     body.put("username", username.getText().toString());
                     body.put("password", password.getText().toString());
                     body.put("name", name.getText().toString());
                     body.put("phone", phone.getText().toString());
                     body.put("email", email.getText().toString());
-                    call(api.register(body), x -> toast("\u6ce8\u518c\u6210\u529f\uff0c\u8bf7\u767b\u5f55"));
+                    call(api.register(body), x -> toast("注册成功，请登录"));
                 }).show();
     }
 
     private void showPublishChooser() {
         new AlertDialog.Builder(this)
-                .setTitle("\u53d1\u5e03")
-                .setItems(new String[]{"\u53d1\u5e03\u5e16\u5b50", "\u53d1\u5e03\u7269\u54c1"}, (d, which) -> {
+                .setTitle("发布")
+                .setItems(new String[]{"发布帖子", "发布物品"}, (d, which) -> {
                     if (which == 0) showPublishArticle(); else showPublishItem();
                 }).show();
     }
@@ -187,10 +213,10 @@ public class MainActivity extends AppCompatActivity {
         EditText content = form.findViewById(R.id.publish_article_content);
         MaterialButton upload = form.findViewById(R.id.publish_article_upload);
         upload.setOnClickListener(v -> { uploadTarget = img; imagePicker.launch("image/*"); });
-        new AlertDialog.Builder(this).setTitle("\u53d1\u5e03\u5e16\u5b50")
+        new AlertDialog.Builder(this).setTitle("发布帖子")
                 .setView(form)
-                .setNegativeButton("\u53d6\u6d88", null)
-                .setPositiveButton("\u53d1\u5e03", (d, w) -> {
+                .setNegativeButton("取消", null)
+                .setPositiveButton("发布", (d, w) -> {
                     Map<String, Object> body = new HashMap<>();
                     body.put("title", title.getText().toString());
                     body.put("description", desc.getText().toString());
@@ -198,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                     body.put("content", content.getText().toString());
                     body.put("userId", currentUser.id);
                     call(api.addArticle(body), x -> {
-                        toast("\u5df2\u63d0\u4ea4\uff0c\u7b49\u5f85\u7ba1\u7406\u5458\u5ba1\u6838");
+                        toast("已提交，等待管理员审核");
                         openMe();
                     });
                 }).show();
@@ -213,10 +239,10 @@ public class MainActivity extends AppCompatActivity {
         EditText cat = form.findViewById(R.id.publish_item_category);
         MaterialButton upload = form.findViewById(R.id.publish_item_upload);
         upload.setOnClickListener(v -> { uploadTarget = img; imagePicker.launch("image/*"); });
-        new AlertDialog.Builder(this).setTitle("\u53d1\u5e03\u7269\u54c1")
+        new AlertDialog.Builder(this).setTitle("发布物品")
                 .setView(form)
-                .setNegativeButton("\u53d6\u6d88", null)
-                .setPositiveButton("\u53d1\u5e03", (d, w) -> {
+                .setNegativeButton("取消", null)
+                .setPositiveButton("发布", (d, w) -> {
                     Map<String, Object> body = new HashMap<>();
                     body.put("name", name.getText().toString());
                     body.put("description", desc.getText().toString());
@@ -226,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                     body.put("status", false);
                     try { body.put("categoryId", Integer.parseInt(cat.getText().toString())); } catch (Exception ignored) {}
                     call(api.addItem(body), x -> {
-                        toast("\u5df2\u63d0\u4ea4\uff0c\u7b49\u5f85\u7ba1\u7406\u5458\u5ba1\u6838");
+                        toast("已提交，等待管理员审核");
                         openMe();
                     });
                 }).show();
@@ -242,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
             MultipartBody.Part part = MultipartBody.Part.createFormData("file", "upload.jpg", body);
             call(api.upload(part), url -> {
                 uploadTarget.setText(url);
-                toast("\u4e0a\u4f20\u6210\u529f");
+                toast("上传成功");
             });
         } catch (Exception e) {
             toast("upload failed: " + e.getMessage());

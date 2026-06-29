@@ -42,7 +42,7 @@ public class HotFragment extends BaseFragment {
             list.removeAllViews();
             List<Article> articles = page.list == null ? new ArrayList<>() : page.list;
             articles.sort((a, b) -> intValue(b.likeCount) - intValue(a.likeCount));
-            if (articles.isEmpty()) list.addView(empty("\u6682\u65e0\u5e16\u5b50"));
+            if (articles.isEmpty()) list.addView(empty("暂无帖子"));
             else for (Article article : articles) list.addView(hotArticleRow(article));
         });
     }
@@ -55,7 +55,7 @@ public class HotFragment extends BaseFragment {
         TextView title = text(article.title, 15, true);
         title.setSingleLine(true);
         title.setEllipsize(TextUtils.TruncateAt.END);
-        TextView heat = text("\u70ed\u5ea6 " + intValue(article.likeCount), 13, false);
+        TextView heat = text("热度 " + intValue(article.likeCount), 13, false);
         heat.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
         row.addView(title, new LinearLayout.LayoutParams(0, dp(36), 1));
         row.addView(heat, new LinearLayout.LayoutParams(dp(88), dp(36)));
