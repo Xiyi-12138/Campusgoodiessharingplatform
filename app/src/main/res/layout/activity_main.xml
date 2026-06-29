@@ -25,7 +25,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_home"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/AppNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -33,7 +33,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_hot"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/AppNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -41,7 +41,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_publish"
-
+            style="@style/AppButton"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginStart="6dp"
@@ -53,7 +53,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_messages"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/AppNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -61,7 +61,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/nav_me"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            style="@style/AppNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

@@ -38,7 +38,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/publish_article_upload"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="上传封面图片" />
@@ -53,4 +53,3 @@
             android:padding="12dp" />
     </LinearLayout>
 </ScrollView>
-

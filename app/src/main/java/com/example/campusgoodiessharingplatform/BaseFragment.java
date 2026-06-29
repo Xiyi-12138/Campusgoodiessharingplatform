@@ -220,14 +220,14 @@ public abstract class BaseFragment extends Fragment {
     protected MaterialButton button(String s) {
         MaterialButton b = new MaterialButton(requireContext());
         b.setText(s);
+        setTabSelected(b, true);
         return b;
     }
 
     protected MaterialButton outlineButton(String s) {
         MaterialButton b = new MaterialButton(requireContext());
         b.setText(s);
-        b.setStrokeWidth(dp(1));
-        b.setStrokeColorResource(android.R.color.darker_gray);
+        setTabSelected(b, false);
         return b;
     }
 

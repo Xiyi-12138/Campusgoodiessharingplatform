@@ -58,7 +58,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/me_edit_profile"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -68,7 +68,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/me_articles"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -78,7 +78,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/me_items"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -88,7 +88,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/me_collects"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
@@ -98,7 +98,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/me_logout"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/AppButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"

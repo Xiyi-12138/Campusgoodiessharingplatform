@@ -73,22 +73,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openHome() {
+        updateNavState(R.id.nav_home);
         switchFragment(new HomeFragment());
     }
 
     public void openHot() {
+        updateNavState(R.id.nav_hot);
         switchFragment(new HotFragment());
     }
 
     public void openMessages() {
+        updateNavState(R.id.nav_messages);
         switchFragment(new MessagesFragment());
     }
 
     public void openMe() {
+        updateNavState(R.id.nav_me);
         switchFragment(new MeFragment());
     }
 
     public void openArticleDetail(int articleId) {
+        updateNavState(0);
         switchFragment(ArticleDetailFragment.newInstance(articleId));
     }
 
@@ -107,6 +112,20 @@ public class MainActivity extends AppCompatActivity {
                 .beginTransaction()
                 .replace(R.id.content_container, fragment)
                 .commit();
+    }
+
+    private void updateNavState(int selectedId) {
+        int[] ids = {R.id.nav_home, R.id.nav_hot, R.id.nav_messages, R.id.nav_me};
+        for (int id : ids) {
+            MaterialButton button = findViewById(id);
+            if (button == null) continue;
+            boolean selected = id == selectedId;
+            button.setSelected(selected);
+            button.setTextColor(selected ? 0xffffffff : 0xff444444);
+            button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(selected ? 0xff3f51b5 : 0xffffffff));
+            button.setStrokeColor(android.content.res.ColorStateList.valueOf(selected ? 0xff3f51b5 : 0xffffffff));
+            button.setStrokeWidth(dp(1));
+        }
     }
 
     private void showLogin() {
@@ -288,14 +307,20 @@ public class MainActivity extends AppCompatActivity {
     private MaterialButton button(String s) {
         MaterialButton b = new MaterialButton(this);
         b.setText(s);
+        b.setTextColor(0xffffffff);
+        b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff3f51b5));
+        b.setStrokeColor(android.content.res.ColorStateList.valueOf(0xff3f51b5));
+        b.setStrokeWidth(dp(1));
         return b;
     }
 
     private MaterialButton outlineButton(String s) {
         MaterialButton b = new MaterialButton(this);
         b.setText(s);
+        b.setTextColor(0xff444444);
+        b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffffffff));
+        b.setStrokeColor(android.content.res.ColorStateList.valueOf(0xffb0b0b0));
         b.setStrokeWidth(dp(1));
-        b.setStrokeColorResource(android.R.color.darker_gray);
         return b;
     }
 

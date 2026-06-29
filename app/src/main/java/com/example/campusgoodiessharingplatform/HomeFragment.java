@@ -36,8 +36,8 @@ public class HomeFragment extends BaseFragment {
         LinearLayout list = root.findViewById(R.id.home_list);
         market.setText("\u5e02\u96c6");
         share.setText("\u5206\u4eab");
-        market.setStrokeWidth(homeItems ? 0 : dp(1));
-        share.setStrokeWidth(homeItems ? dp(1) : 0);
+        setTabSelected(market, homeItems);
+        setTabSelected(share, !homeItems);
         market.setOnClickListener(v -> { homeItems = true; searchKeyword = null; render(); });
         share.setOnClickListener(v -> { homeItems = false; searchKeyword = null; render(); });
         search.setOnClickListener(v -> showSearchDialog());
