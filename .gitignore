@@ -20,3 +20,5 @@ backend/springboot/files/
 
 # IDE state
 .idea/
+/backend/springboot/backend-live.err.log
+/backend/springboot/backend-live.log

@@ -30,11 +30,17 @@ public class MessagesFragment extends BaseFragment {
     }
 
     private void renderNotifications() {
+        TextView title = root.findViewById(R.id.messages_title);
         MaterialButton readAll = root.findViewById(R.id.messages_read_all);
+        MaterialButton back = root.findViewById(R.id.messages_back);
         MaterialButton received = root.findViewById(R.id.messages_received);
         MaterialButton sent = root.findViewById(R.id.messages_sent);
         LinearLayout list = root.findViewById(R.id.messages_list);
+        title.setText("\u4fe1\u606f");
+        readAll.setVisibility(View.VISIBLE);
+        back.setVisibility(View.GONE);
         readAll.setOnClickListener(v -> call(api().readAll(currentUser().id), x -> renderNotifications()));
+        back.setOnClickListener(v -> renderNotifications());
         received.setOnClickListener(v -> showReceivedCharges());
         sent.setOnClickListener(v -> showSentCharges());
         call(api().notifications(1, 50, currentUser().id), p -> {
@@ -53,7 +59,12 @@ public class MessagesFragment extends BaseFragment {
 
     private void showReceivedCharges() {
         TextView title = root.findViewById(R.id.messages_title);
+        MaterialButton readAll = root.findViewById(R.id.messages_read_all);
+        MaterialButton back = root.findViewById(R.id.messages_back);
         title.setText("\u6536\u5230\u7684\u4ea4\u6362\u7533\u8bf7");
+        readAll.setVisibility(View.GONE);
+        back.setVisibility(View.VISIBLE);
+        back.setOnClickListener(v -> renderNotifications());
         LinearLayout list = root.findViewById(R.id.messages_list);
         call(api().chargePage(1, 50, null, currentUser().id, null), p -> {
             list.removeAllViews();
@@ -64,7 +75,12 @@ public class MessagesFragment extends BaseFragment {
 
     private void showSentCharges() {
         TextView title = root.findViewById(R.id.messages_title);
+        MaterialButton readAll = root.findViewById(R.id.messages_read_all);
+        MaterialButton back = root.findViewById(R.id.messages_back);
         title.setText("\u6211\u7684\u4ea4\u6362\u7533\u8bf7");
+        readAll.setVisibility(View.GONE);
+        back.setVisibility(View.VISIBLE);
+        back.setOnClickListener(v -> renderNotifications());
         LinearLayout list = root.findViewById(R.id.messages_list);
         call(api().chargePage(1, 50, currentUser().id, null, null), p -> {
             list.removeAllViews();
