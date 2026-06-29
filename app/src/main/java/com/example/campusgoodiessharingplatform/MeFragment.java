@@ -153,12 +153,10 @@ public class MeFragment extends BaseFragment {
         if (STATUS_REJECT.equals(article.status)) card.addView(text("拒绝理由: " + safe(article.reason), 13, false));
         card.addView(text(safe(article.description), 14, false));
         LinearLayout actions = row();
-        MaterialButton detail = outlineButton("查看详情");
         MaterialButton delete = outlineButton("删除");
-        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
         actions.addView(delete, new LinearLayout.LayoutParams(0, dp(42), 1));
         card.addView(actions, topLp(8));
-        detail.setOnClickListener(v -> host().openArticleDetail(article.id));
+        card.setOnClickListener(v -> host().openArticleDetail(article.id));
         delete.setOnClickListener(v -> confirmDeleteArticle(article));
         return card;
     }
@@ -171,17 +169,16 @@ public class MeFragment extends BaseFragment {
         if (STATUS_REJECT.equals(item.checkStatus)) card.addView(text("拒绝理由: " + safe(item.reason), 13, false));
         card.addView(text("上架状态: " + (Boolean.TRUE.equals(item.status) ? "已上架" : "未上架"), 13, false));
         card.addView(text(safe(item.description), 14, false));
+        card.addView(requirementText(safe(item.requirement), 13));
         LinearLayout actions = row();
-        MaterialButton detail = outlineButton("详情");
         MaterialButton status = STATUS_PASS.equals(item.checkStatus)
                 ? (Boolean.TRUE.equals(item.status) ? outlineButton("下架") : button("上架"))
                 : outlineButton("审核后可上架");
         MaterialButton delete = outlineButton("删除");
-        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
         actions.addView(status, new LinearLayout.LayoutParams(0, dp(42), 1));
         actions.addView(delete, new LinearLayout.LayoutParams(0, dp(42), 1));
         card.addView(actions, topLp(8));
-        detail.setOnClickListener(v -> showItemDetail(item));
+        card.setOnClickListener(v -> showItemDetail(item, this::showMineItems));
         delete.setOnClickListener(v -> confirmDeleteItem(item));
         status.setOnClickListener(v -> {
             if (!STATUS_PASS.equals(item.checkStatus)) {
@@ -201,13 +198,12 @@ public class MeFragment extends BaseFragment {
         card.addView(image(item.img, 140));
         card.addView(text(item.name, 18, true));
         card.addView(text(safe(item.description), 14, false));
+        card.addView(requirementText(safe(item.requirement), 13));
         LinearLayout actions = row();
-        MaterialButton detail = outlineButton("详情");
         MaterialButton uncollect = outlineButton("取消收藏");
-        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
         actions.addView(uncollect, new LinearLayout.LayoutParams(0, dp(42), 1));
         card.addView(actions, topLp(8));
-        detail.setOnClickListener(v -> showItemDetail(item));
+        card.setOnClickListener(v -> showItemDetail(item, this::showCollects));
         uncollect.setOnClickListener(v -> confirmUncollectItem(item));
         return card;
     }

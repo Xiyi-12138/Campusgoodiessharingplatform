@@ -15,7 +15,7 @@ public interface ArticleMapper {
 
     int updateById(Article article);
 
-    @Select("select article.*, user.name as userName, " +
+    @Select("select article.*, user.name as userName, user.avatar as avatar, " +
             "(select count(*) from `likes` where likes.article_id = article.id) as likeCount, " +
             "(select count(*) from `comments` where comments.article_id = article.id) as commentCount, " +
             "(select l.id from `likes` l where l.article_id = article.id and l.user_id = #{loginUserId} limit 1) as likedId " +

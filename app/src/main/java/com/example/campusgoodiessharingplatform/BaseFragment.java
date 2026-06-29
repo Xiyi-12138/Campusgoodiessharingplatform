@@ -1,8 +1,14 @@
 package com.example.campusgoodiessharingplatform;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
+import android.graphics.Typeface;
 import android.net.Uri;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
@@ -25,6 +31,8 @@ import com.google.android.material.button.MaterialButton;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import okhttp3.MediaType;
@@ -95,15 +103,120 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected void showItemDetail(Item item) {
-        LinearLayout box = formLayout();
-        box.addView(image(item.img, 220));
-        box.addView(text(item.name, 20, true));
-        box.addView(text("分类: " + safe(item.categoryName) + " | 收藏 " + intValue(item.collectCount), 13, false));
-        box.addView(text("审核: " + safe(item.checkStatus) + " | 上架: " + (Boolean.TRUE.equals(item.status) ? "已上架" : "未上架"), 13, false));
-        box.addView(text("描述: " + safe(item.description), 15, false));
-        box.addView(text("交换条件: " + safe(item.requirement), 15, false));
-        box.addView(text("发布人: " + safe(item.userName), 13, false));
-        new AlertDialog.Builder(requireContext()).setTitle("物品详情").setView(scroll(box)).setPositiveButton("关闭", null).show();
+        showItemDetail(item, null);
+    }
+
+    protected void showItemDetail(Item item, Runnable afterChange) {
+        View detail = getLayoutInflater().inflate(R.layout.dialog_item_detail, null);
+        ImageView image = detail.findViewById(R.id.item_detail_image);
+        TextView name = detail.findViewById(R.id.item_detail_name);
+        TextView meta = detail.findViewById(R.id.item_detail_meta);
+        TextView audit = detail.findViewById(R.id.item_detail_audit);
+        TextView description = detail.findViewById(R.id.item_detail_description);
+        TextView requirement = detail.findViewById(R.id.item_detail_requirement);
+        TextView owner = detail.findViewById(R.id.item_detail_owner);
+        LinearLayout actions = detail.findViewById(R.id.item_detail_actions);
+        MaterialButton collect = detail.findViewById(R.id.item_detail_collect);
+        MaterialButton exchange = detail.findViewById(R.id.item_detail_exchange);
+        if (item.img != null && !item.img.isEmpty()) Glide.with(this).load(normalizeUrl(item.img)).into(image);
+        name.setText(safe(item.name));
+        meta.setText("分类: " + safe(item.categoryName) + " | 收藏 " + intValue(item.collectCount));
+        audit.setText("审核: " + safe(item.checkStatus) + " | 上架: " + (Boolean.TRUE.equals(item.status) ? "已上架" : "未上架"));
+        description.setText("描述: " + safe(item.description));
+        requirement.setText(styledRequirement(safe(item.requirement)));
+        owner.setText("发布人: " + safe(item.userName));
+        styleActionButton(collect, item.collectId == null ? "收藏" : "取消收藏", item.collectId == null);
+        if (item.userId == null || !item.userId.equals(currentUser().id)) {
+            styleActionButton(exchange, "申请交换", true);
+            exchange.setOnClickListener(v -> showExchangeDialog(item));
+        } else {
+            exchange.setVisibility(View.GONE);
+        }
+        AlertDialog dialog = new AlertDialog.Builder(requireContext()).setTitle("物品详情").setView(detail).setPositiveButton("关闭", null).show();
+        collect.setOnClickListener(v -> toggleCollectInDetail(item, dialog, afterChange));
+    }
+
+    protected TextView requirementText(String value, int sp) {
+        TextView t = text("", sp, true);
+        String label = "交换条件";
+        t.setText(styledRequirement(value));
+        return t;
+    }
+
+    protected SpannableString styledRequirement(String value) {
+        String label = "交换条件";
+        SpannableString content = new SpannableString(label + ": " + safe(value));
+        content.setSpan(new ForegroundColorSpan(0xff2f6f73), 0, label.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        content.setSpan(new StyleSpan(Typeface.BOLD), 0, label.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return content;
+    }
+
+    protected void styleActionButton(MaterialButton button, String text, boolean primary) {
+        button.setText(text);
+        button.setTextColor(primary ? 0xffffffff : 0xff3f51b5);
+        button.setTextSize(14);
+        button.setTypeface(Typeface.DEFAULT_BOLD);
+        button.setCornerRadius(dp(22));
+        button.setBackgroundTintList(ColorStateList.valueOf(primary ? 0xff3f51b5 : 0xffeef1ff));
+        button.setStrokeWidth(0);
+    }
+
+    protected MaterialButton primaryActionButton(String s) {
+        MaterialButton b = new MaterialButton(requireContext());
+        styleActionButton(b, s, true);
+        return b;
+    }
+
+    protected MaterialButton secondaryActionButton(String s) {
+        MaterialButton b = new MaterialButton(requireContext());
+        styleActionButton(b, s, false);
+        return b;
+    }
+
+    private void toggleCollectInDetail(Item item, DialogInterface dialog, Runnable afterChange) {
+        if (item.collectId == null) {
+            Map<String, Object> body = new HashMap<>();
+            body.put("userId", currentUser().id);
+            body.put("itemId", item.id);
+            call(api().collect(body), x -> {
+                toast("已收藏");
+                dialog.dismiss();
+                if (afterChange != null) afterChange.run();
+            });
+        } else {
+            call(api().uncollect(item.collectId), x -> {
+                toast("已取消收藏");
+                dialog.dismiss();
+                if (afterChange != null) afterChange.run();
+            });
+        }
+    }
+
+    protected void showExchangeDialog(Item item) {
+        LinearLayout form = formLayout();
+        EditText content = input("我提供的交换物品");
+        EditText remark = input("交换理由");
+        form.addView(text(item.name, 18, true));
+        form.addView(content, topLp(8));
+        form.addView(remark, topLp(8));
+        new AlertDialog.Builder(requireContext()).setTitle("申请交换")
+                .setView(form)
+                .setNegativeButton("取消", null)
+                .setPositiveButton("提交", (d, w) -> {
+                    String contentValue = content.getText().toString().trim();
+                    String remarkValue = remark.getText().toString().trim();
+                    if (contentValue.isEmpty() || remarkValue.isEmpty()) {
+                        toast("请完整填写交换物品和理由");
+                        return;
+                    }
+                    Map<String, Object> body = new HashMap<>();
+                    body.put("itemId", item.id);
+                    body.put("itemUserid", item.userId);
+                    body.put("userId", currentUser().id);
+                    body.put("content", contentValue);
+                    body.put("remark", remarkValue);
+                    call(api().addCharge(body), x -> toast("申请已提交"));
+                }).show();
     }
 
     protected ScrollView scroll(View child) {
@@ -196,6 +309,15 @@ public abstract class BaseFragment extends Fragment {
         wrap.addView(iv, params);
         if (url != null && !url.isEmpty()) Glide.with(this).load(normalizeUrl(url)).circleCrop().into(iv);
         return wrap;
+    }
+
+    protected ImageView roundImage(String url, int size) {
+        ImageView iv = new ImageView(requireContext());
+        iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        iv.setBackgroundColor(0xffeeeeee);
+        iv.setLayoutParams(lp(dp(size), dp(size)));
+        if (url != null && !url.isEmpty()) Glide.with(this).load(normalizeUrl(url)).circleCrop().into(iv);
+        return iv;
     }
 
     protected TextView text(String s, int sp, boolean bold) {

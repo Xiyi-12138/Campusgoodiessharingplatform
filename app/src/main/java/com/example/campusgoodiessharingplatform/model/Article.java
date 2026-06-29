@@ -9,6 +9,7 @@ public class Article {
     public String time;
     public Integer userId;
     public String userName;
+    public String avatar;
     public String status;
     public String reason;
     public Integer likeCount;

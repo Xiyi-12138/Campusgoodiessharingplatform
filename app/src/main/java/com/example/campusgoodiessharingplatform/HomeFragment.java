@@ -18,9 +18,7 @@ import com.example.campusgoodiessharingplatform.model.Item;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class HomeFragment extends BaseFragment {
     private static final String ARG_HOME_ITEMS = "home_items";
@@ -159,18 +157,8 @@ public class HomeFragment extends BaseFragment {
         card.addView(text(item.name, 18, true));
         card.addView(text((item.categoryName == null ? "未分类" : item.categoryName) + "  |  收藏 " + intValue(item.collectCount), 12, false));
         card.addView(text(item.description, 14, false));
-        card.addView(text("交换条件: " + safe(item.requirement), 13, false));
-        LinearLayout actions = row();
-        MaterialButton collect = item.collectId == null ? outlineButton("收藏") : button("取消收藏");
-        MaterialButton detail = outlineButton("详情");
-        MaterialButton exchange = outlineButton("申请交换");
-        actions.addView(collect, new LinearLayout.LayoutParams(0, dp(42), 1));
-        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
-        if (item.userId == null || !item.userId.equals(currentUser().id)) actions.addView(exchange, new LinearLayout.LayoutParams(0, dp(42), 1));
-        card.addView(actions);
-        collect.setOnClickListener(v -> toggleCollect(item));
-        detail.setOnClickListener(v -> showItemDetail(item));
-        exchange.setOnClickListener(v -> showExchangeDialog(item));
+        card.addView(requirementText(safe(item.requirement), 13));
+        card.setOnClickListener(v -> showItemDetail(item, this::renderKeepingScroll));
         return card;
     }
 
@@ -180,57 +168,7 @@ public class HomeFragment extends BaseFragment {
         card.addView(text(article.title, 18, true));
         card.addView(text("发布人: " + safe(article.userName) + "  |  赞 " + intValue(article.likeCount) + "  评论 " + intValue(article.commentCount), 12, false));
         card.addView(text(article.description, 14, false));
-        LinearLayout actions = row();
-        MaterialButton like = article.likedId == null ? outlineButton("点赞") : button("取消点赞");
-        MaterialButton detail = outlineButton("详情/评论");
-        actions.addView(like, new LinearLayout.LayoutParams(0, dp(42), 1));
-        actions.addView(detail, new LinearLayout.LayoutParams(0, dp(42), 1));
-        card.addView(actions);
-        like.setOnClickListener(v -> toggleLike(article));
-        detail.setOnClickListener(v -> host().openArticleDetail(article.id));
+        card.setOnClickListener(v -> host().openArticleDetail(article.id));
         return card;
-    }
-
-    private void toggleLike(Article article) {
-        if (article.likedId == null) {
-            Map<String, Object> body = new HashMap<>();
-            body.put("userId", currentUser().id); body.put("articleId", article.id);
-            call(api().like(body), x -> { toast("已点赞"); renderKeepingScroll(); });
-        } else call(api().unlike(article.likedId), x -> { toast("已取消"); renderKeepingScroll(); });
-    }
-
-    private void toggleCollect(Item item) {
-        if (item.collectId == null) {
-            Map<String, Object> body = new HashMap<>();
-            body.put("userId", currentUser().id); body.put("itemId", item.id);
-            call(api().collect(body), x -> { toast("已收藏"); renderKeepingScroll(); });
-        } else call(api().uncollect(item.collectId), x -> { toast("已取消收藏"); renderKeepingScroll(); });
-    }
-
-    private void showExchangeDialog(Item item) {
-        LinearLayout form = formLayout();
-        EditText content = input("我提供的交换物品");
-        EditText remark = input("交换理由");
-        form.addView(text(item.name, 18, true));
-        form.addView(content, topLp(8));
-        form.addView(remark, topLp(8));
-        new AlertDialog.Builder(requireContext()).setTitle("申请交换")
-                .setView(form)
-                .setNegativeButton("取消", null)
-                .setPositiveButton("提交", (d, w) -> {
-                    String contentValue = content.getText().toString().trim();
-                    String remarkValue = remark.getText().toString().trim();
-                    if (contentValue.isEmpty() || remarkValue.isEmpty()) {
-                        toast("请完整填写交换物品和理由");
-                        return;
-                    }
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("itemId", item.id);
-                    body.put("itemUserid", item.userId);
-                    body.put("userId", currentUser().id);
-                    body.put("content", contentValue);
-                    body.put("remark", remarkValue);
-                    call(api().addCharge(body), x -> toast("申请已提交"));
-                }).show();
     }
 }

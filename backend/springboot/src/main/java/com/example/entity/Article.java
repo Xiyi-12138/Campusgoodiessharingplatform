@@ -9,6 +9,7 @@ public class Article {
     private String time;
     private Integer userId;
     private String userName;
+    private String avatar;
     private String status;
     private String reason;
     private Integer likeCount;
@@ -32,6 +33,8 @@ public class Article {
     public void setUserId(Integer userId) { this.userId = userId; }
     public String getUserName() { return userName; }
     public void setUserName(String userName) { this.userName = userName; }
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getReason() { return reason; }
