@@ -21,6 +21,8 @@ import java.util.function.Consumer;
 
 public class MessagesFragment extends BaseFragment {
     private View root;
+    private MaterialButton received;
+    private MaterialButton sent;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,12 +35,13 @@ public class MessagesFragment extends BaseFragment {
         TextView title = root.findViewById(R.id.messages_title);
         MaterialButton readAll = root.findViewById(R.id.messages_read_all);
         MaterialButton back = root.findViewById(R.id.messages_back);
-        MaterialButton received = root.findViewById(R.id.messages_received);
-        MaterialButton sent = root.findViewById(R.id.messages_sent);
+        received = root.findViewById(R.id.messages_received);
+        sent = root.findViewById(R.id.messages_sent);
         LinearLayout list = root.findViewById(R.id.messages_list);
         title.setText("\u4fe1\u606f");
         readAll.setVisibility(View.VISIBLE);
         back.setVisibility(View.GONE);
+        updateTabState(null);
         readAll.setOnClickListener(v -> call(api().readAll(currentUser().id), x -> renderNotifications()));
         back.setOnClickListener(v -> renderNotifications());
         received.setOnClickListener(v -> showReceivedCharges());
@@ -58,6 +61,7 @@ public class MessagesFragment extends BaseFragment {
     }
 
     private void showReceivedCharges() {
+        updateTabState(received);
         TextView title = root.findViewById(R.id.messages_title);
         MaterialButton readAll = root.findViewById(R.id.messages_read_all);
         MaterialButton back = root.findViewById(R.id.messages_back);
@@ -74,6 +78,7 @@ public class MessagesFragment extends BaseFragment {
     }
 
     private void showSentCharges() {
+        updateTabState(sent);
         TextView title = root.findViewById(R.id.messages_title);
         MaterialButton readAll = root.findViewById(R.id.messages_read_all);
         MaterialButton back = root.findViewById(R.id.messages_back);
@@ -184,5 +189,11 @@ public class MessagesFragment extends BaseFragment {
                         chosen.get(Calendar.HOUR_OF_DAY), chosen.get(Calendar.MINUTE), chosen.get(Calendar.SECOND)));
             }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show();
         }, now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH)).show();
+    }
+
+    private void updateTabState(MaterialButton selected) {
+        if (received == null || sent == null) return;
+        setTabSelected(received, received == selected);
+        setTabSelected(sent, sent == selected);
     }
 }

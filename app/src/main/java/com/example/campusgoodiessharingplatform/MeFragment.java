@@ -25,6 +25,9 @@ public class MeFragment extends BaseFragment {
     private View root;
     private EditText uploadTarget;
     private ActivityResultLauncher<String> imagePicker;
+    private MaterialButton myArticles;
+    private MaterialButton myItems;
+    private MaterialButton collects;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,12 +55,13 @@ public class MeFragment extends BaseFragment {
         name.setText(safe(currentUser().name));
         info.setText("\u8d26\u53f7: " + safe(currentUser().username) + "\n\u624b\u673a: " + safe(currentUser().phone) + "\n\u90ae\u7bb1: " + safe(currentUser().email));
         MaterialButton profile = root.findViewById(R.id.me_edit_profile);
-        MaterialButton myArticles = root.findViewById(R.id.me_articles);
-        MaterialButton myItems = root.findViewById(R.id.me_items);
-        MaterialButton collects = root.findViewById(R.id.me_collects);
+        myArticles = root.findViewById(R.id.me_articles);
+        myItems = root.findViewById(R.id.me_items);
+        collects = root.findViewById(R.id.me_collects);
         MaterialButton logout = root.findViewById(R.id.me_logout);
         LinearLayout list = root.findViewById(R.id.me_content_list);
         list.removeAllViews();
+        updateTabState(null);
         profile.setOnClickListener(v -> showProfileDialog());
         myArticles.setOnClickListener(v -> showMineArticles());
         myItems.setOnClickListener(v -> showMineItems());
@@ -107,6 +111,7 @@ public class MeFragment extends BaseFragment {
     }
 
     public void showMineArticles() {
+        updateTabState(myArticles);
         TextView title = root.findViewById(R.id.me_title);
         title.setText("\u6211\u7684\u5e16\u5b50");
         LinearLayout list = root.findViewById(R.id.me_content_list);
@@ -118,6 +123,7 @@ public class MeFragment extends BaseFragment {
     }
 
     public void showMineItems() {
+        updateTabState(myItems);
         TextView title = root.findViewById(R.id.me_title);
         title.setText("\u6211\u7684\u7269\u54c1");
         LinearLayout list = root.findViewById(R.id.me_content_list);
@@ -129,6 +135,7 @@ public class MeFragment extends BaseFragment {
     }
 
     private void showCollects() {
+        updateTabState(collects);
         TextView title = root.findViewById(R.id.me_title);
         title.setText("\u6211\u7684\u6536\u85cf\u5939");
         LinearLayout list = root.findViewById(R.id.me_content_list);
@@ -190,5 +197,12 @@ public class MeFragment extends BaseFragment {
         card.addView(detail, topLp(8));
         detail.setOnClickListener(v -> showItemDetail(item));
         return card;
+    }
+
+    private void updateTabState(MaterialButton selected) {
+        if (myArticles == null || myItems == null || collects == null) return;
+        setTabSelected(myArticles, myArticles == selected);
+        setTabSelected(myItems, myItems == selected);
+        setTabSelected(collects, collects == selected);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.campusgoodiessharingplatform;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.view.Gravity;
 import android.view.View;
@@ -228,6 +229,14 @@ public abstract class BaseFragment extends Fragment {
         b.setStrokeWidth(dp(1));
         b.setStrokeColorResource(android.R.color.darker_gray);
         return b;
+    }
+
+    protected void setTabSelected(MaterialButton button, boolean selected) {
+        button.setSelected(selected);
+        button.setTextColor(selected ? 0xffffffff : 0xff444444);
+        button.setBackgroundTintList(ColorStateList.valueOf(selected ? 0xff3f51b5 : 0xffffffff));
+        button.setStrokeColor(ColorStateList.valueOf(selected ? 0xff3f51b5 : 0xffb0b0b0));
+        button.setStrokeWidth(dp(1));
     }
 
     protected LinearLayout.LayoutParams topLp(int top) {
