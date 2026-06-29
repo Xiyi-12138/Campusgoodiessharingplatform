@@ -3,6 +3,7 @@ package com.example.campusgoodiessharingplatform;
 import android.app.AlertDialog;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMain() {
         setContentView(R.layout.activity_main);
+        applyStatusBarSpacing(findViewById(R.id.content_container), 4);
         setupBackPressedHandler();
         findViewById(R.id.nav_home).setOnClickListener(v -> openHome());
         findViewById(R.id.nav_hot).setOnClickListener(v -> openHot());
@@ -156,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showLogin() {
         setContentView(R.layout.activity_login);
+        applyStatusBarSpacing(findViewById(R.id.login_root), 0);
         EditText username = findViewById(R.id.login_username);
         EditText password = findViewById(R.id.login_password);
         MaterialButton login = findViewById(R.id.login_button);
@@ -362,6 +365,19 @@ public class MainActivity extends AppCompatActivity {
 
     private int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private void applyStatusBarSpacing(View view, int extraTopDp) {
+        if (view == null) return;
+        int left = view.getPaddingLeft();
+        int top = view.getPaddingTop();
+        int right = view.getPaddingRight();
+        int bottom = view.getPaddingBottom();
+        view.setOnApplyWindowInsetsListener((v, insets) -> {
+            v.setPadding(left, top + insets.getSystemWindowInsetTop() + dp(extraTopDp), right, bottom);
+            return insets;
+        });
+        view.requestApplyInsets();
     }
 
     private void toast(String s) {
