@@ -1,14 +1,18 @@
 package com.example.campusgoodiessharingplatform;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
+import com.example.campusgoodiessharingplatform.model.Category;
 import com.example.campusgoodiessharingplatform.model.Article;
 import com.example.campusgoodiessharingplatform.model.Item;
 import com.google.android.material.button.MaterialButton;
@@ -23,6 +27,7 @@ public class HomeFragment extends BaseFragment {
     private View root;
     private boolean homeItems = true;
     private String searchKeyword;
+    private Integer selectedCategoryId;
     private Integer restoreScrollY;
 
     public static HomeFragment newInstance(boolean homeItems) {
@@ -46,15 +51,21 @@ public class HomeFragment extends BaseFragment {
         MaterialButton market = root.findViewById(R.id.tab_market);
         MaterialButton share = root.findViewById(R.id.tab_share);
         LinearLayout list = root.findViewById(R.id.home_list);
+        HorizontalScrollView categoryScroll = root.findViewById(R.id.home_category_scroll);
         market.setText("市集");
         share.setText("分享");
         setTabSelected(market, homeItems);
         setTabSelected(share, !homeItems);
-        market.setOnClickListener(v -> { homeItems = true; searchKeyword = null; render(); });
-        share.setOnClickListener(v -> { homeItems = false; searchKeyword = null; render(); });
+        market.setOnClickListener(v -> { homeItems = true; searchKeyword = null; selectedCategoryId = null; render(); });
+        share.setOnClickListener(v -> { homeItems = false; searchKeyword = null; selectedCategoryId = null; render(); });
         search.setOnClickListener(v -> showSearchDialog());
-        if (homeItems) loadItems(list, null, null, searchKeyword, false);
-        else loadArticles(list, null, searchKeyword, false);
+        categoryScroll.setVisibility(homeItems ? View.VISIBLE : View.GONE);
+        if (homeItems) {
+            loadCategories();
+            loadItems(list, null, selectedCategoryId, searchKeyword, false);
+        } else {
+            loadArticles(list, null, searchKeyword, false);
+        }
     }
 
     private void renderKeepingScroll() {
@@ -76,6 +87,46 @@ public class HomeFragment extends BaseFragment {
         new AlertDialog.Builder(requireContext()).setTitle("搜索").setView(input)
                 .setNegativeButton("取消", null)
                 .setPositiveButton("搜索", (d, w) -> { searchKeyword = input.getText().toString(); render(); }).show();
+    }
+
+    private void loadCategories() {
+        LinearLayout categoryList = root.findViewById(R.id.home_category_list);
+        categoryList.removeAllViews();
+        addCategoryButton(categoryList, "全部", null);
+        call(api().categories(), categories -> {
+            categoryList.removeAllViews();
+            addCategoryButton(categoryList, "全部", null);
+            if (categories == null || categories.isEmpty()) return;
+            for (Category category : categories) {
+                if (category == null || category.id == null) continue;
+                addCategoryButton(categoryList, safe(category.name).isEmpty() ? "未命名分类" : category.name, category.id);
+            }
+        });
+    }
+
+    private void addCategoryButton(LinearLayout categoryList, String name, Integer categoryId) {
+        MaterialButton button = new MaterialButton(requireContext());
+        boolean selected = categoryId == null ? selectedCategoryId == null : categoryId.equals(selectedCategoryId);
+        button.setText(name);
+        button.setTextSize(13);
+        button.setTypeface(selected ? Typeface.DEFAULT_BOLD : Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        button.setTextColor(selected ? 0xff111111 : 0xff8B8B8B);
+        button.setBackgroundTintList(ColorStateList.valueOf(0x00000000));
+        button.setStrokeWidth(0);
+        button.setMinWidth(0);
+        button.setMinHeight(0);
+        button.setMinimumWidth(0);
+        button.setMinimumHeight(0);
+        button.setInsetTop(0);
+        button.setInsetBottom(0);
+        button.setPadding(dp(4), 0, dp(4), 0);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, dp(28));
+        params.setMargins(0, 0, dp(4), 0);
+        categoryList.addView(button, params);
+        button.setOnClickListener(v -> {
+            selectedCategoryId = categoryId;
+            render();
+        });
     }
 
     private void loadItems(LinearLayout list, Integer userId, Integer categoryId, String keyword, boolean onlyCollected) {
