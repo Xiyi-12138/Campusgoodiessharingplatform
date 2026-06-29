@@ -5,10 +5,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Gravity;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,13 +23,16 @@ import androidx.fragment.app.Fragment;
 import com.example.campusgoodiessharingplatform.api.ApiClient;
 import com.example.campusgoodiessharingplatform.api.ApiResponse;
 import com.example.campusgoodiessharingplatform.api.ApiService;
+import com.example.campusgoodiessharingplatform.model.Category;
 import com.example.campusgoodiessharingplatform.model.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -239,26 +244,51 @@ public class MainActivity extends AppCompatActivity {
         EditText desc = form.findViewById(R.id.publish_item_desc);
         EditText req = form.findViewById(R.id.publish_item_requirement);
         EditText img = form.findViewById(R.id.publish_item_img);
-        EditText cat = form.findViewById(R.id.publish_item_category);
+        Spinner categorySpinner = form.findViewById(R.id.publish_item_category);
+        List<Category> categories = new ArrayList<>();
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categoryAdapter.add("正在加载分类...");
+        categorySpinner.setAdapter(categoryAdapter);
+        call(api.categories(), loadedCategories -> {
+            categories.clear();
+            categoryAdapter.clear();
+            if (loadedCategories == null || loadedCategories.isEmpty()) {
+                categoryAdapter.add("暂无可选分类");
+            } else {
+                categories.addAll(loadedCategories);
+                for (Category category : loadedCategories) categoryAdapter.add(category.name == null ? "未命名分类" : category.name);
+            }
+            categoryAdapter.notifyDataSetChanged();
+        });
         MaterialButton upload = form.findViewById(R.id.publish_item_upload);
         upload.setOnClickListener(v -> { uploadTarget = img; imagePicker.launch("image/*"); });
-        new AlertDialog.Builder(this).setTitle("发布物品")
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("发布物品")
                 .setView(form)
                 .setNegativeButton("取消", null)
-                .setPositiveButton("发布", (d, w) -> {
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("name", name.getText().toString());
-                    body.put("description", desc.getText().toString());
-                    body.put("requirement", req.getText().toString());
-                    body.put("img", img.getText().toString());
-                    body.put("userId", currentUser.id);
-                    body.put("status", false);
-                    try { body.put("categoryId", Integer.parseInt(cat.getText().toString())); } catch (Exception ignored) {}
-                    call(api.addItem(body), x -> {
-                        toast("已提交，等待管理员审核");
-                        openMe();
-                    });
-                }).show();
+                .setPositiveButton("发布", null)
+                .create();
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            int selected = categorySpinner.getSelectedItemPosition();
+            if (selected < 0 || selected >= categories.size()) {
+                toast("请先选择物品分类");
+                return;
+            }
+            Map<String, Object> body = new HashMap<>();
+            body.put("name", name.getText().toString());
+            body.put("description", desc.getText().toString());
+            body.put("requirement", req.getText().toString());
+            body.put("img", img.getText().toString());
+            body.put("userId", currentUser.id);
+            body.put("status", false);
+            body.put("categoryId", categories.get(selected).id);
+            call(api.addItem(body), x -> {
+                dialog.dismiss();
+                toast("已提交，等待管理员审核");
+                openMe();
+            });
+        }));
+        dialog.show();
     }
 
     private void handlePickedImage(Uri uri) {
