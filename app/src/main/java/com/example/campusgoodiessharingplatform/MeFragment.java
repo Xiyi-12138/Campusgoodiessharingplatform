@@ -52,10 +52,12 @@ public class MeFragment extends BaseFragment {
         avatarBox.addView(avatar(currentUser().avatar, 76));
         TextView name = root.findViewById(R.id.me_name);
         TextView info = root.findViewById(R.id.me_info);
-        TextView contact = root.findViewById(R.id.me_contact_info);
+        TextView phoneText = root.findViewById(R.id.me_phone);
+        TextView emailText = root.findViewById(R.id.me_email);
         name.setText(safe(currentUser().name));
         info.setText("ID: " + safe(currentUser().username));
-        contact.setText("☎  " + safe(currentUser().phone) + "        ✉  " + safe(currentUser().email));
+        phoneText.setText(safe(currentUser().phone));
+        emailText.setText(safe(currentUser().email));
         MaterialButton profile = root.findViewById(R.id.me_edit_profile);
         myArticles = root.findViewById(R.id.me_articles);
         myItems = root.findViewById(R.id.me_items);

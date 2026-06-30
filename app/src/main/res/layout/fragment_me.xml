@@ -95,13 +95,48 @@
                     android:text="" />
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/me_contact_info"
+            <LinearLayout
+                android:id="@+id/me_contact_row"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
                 android:paddingTop="16dp"
-                android:textColor="#5B6472"
-                android:textSize="14sp" />
+                android:baselineAligned="false">
+
+                <ImageView
+                    android:id="@+id/me_phone_icon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/phone"
+                    android:tint="#5B6472" />
+
+                <TextView
+                    android:id="@+id/me_phone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:textColor="#5B6472"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/me_email_icon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginStart="12dp"
+                    android:src="@drawable/email"
+                    android:tint="#5B6472" />
+
+                <TextView
+                    android:id="@+id/me_email"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:textColor="#5B6472"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/me_logout"
