@@ -153,7 +153,7 @@ public class HomeFragment extends BaseFragment {
 
     private View itemCard(Item item) {
         LinearLayout card = card();
-        card.addView(image(item.img, 190));
+        card.addView(cardImage(item.img, 190));
         card.addView(text(item.name, 18, true));
         card.addView(text((item.categoryName == null ? "未分类" : item.categoryName) + "  |  收藏 " + intValue(item.collectCount), 12, false));
         card.addView(text(item.description, 14, false));
@@ -164,7 +164,7 @@ public class HomeFragment extends BaseFragment {
 
     private View articleCard(Article article) {
         LinearLayout card = card();
-        card.addView(image(article.img, 160));
+        card.addView(cardImage(article.img, 160));
         card.addView(text(article.title, 18, true));
         card.addView(text("发布人: " + safe(article.userName) + "  |  赞 " + intValue(article.likeCount) + "  评论 " + intValue(article.commentCount), 12, false));
         card.addView(text(article.description, 14, false));

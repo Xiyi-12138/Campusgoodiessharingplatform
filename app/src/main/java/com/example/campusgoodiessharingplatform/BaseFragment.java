@@ -299,6 +299,15 @@ public abstract class BaseFragment extends Fragment {
         return iv;
     }
 
+    protected ImageView cardImage(String url, int height) {
+        ImageView iv = new ImageView(requireContext());
+        iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        iv.setBackgroundColor(0xffffffff);
+        iv.setLayoutParams(lp(-1, dp(height)));
+        if (url != null && !url.isEmpty()) Glide.with(this).load(normalizeUrl(url)).centerCrop().into(iv);
+        return iv;
+    }
+
     protected View avatar(String url, int size) {
         FrameLayout wrap = new FrameLayout(requireContext());
         wrap.setPadding(0, dp(4), 0, dp(8));

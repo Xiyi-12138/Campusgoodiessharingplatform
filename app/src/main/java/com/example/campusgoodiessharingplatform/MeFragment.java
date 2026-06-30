@@ -163,7 +163,7 @@ public class MeFragment extends BaseFragment {
 
     private View mineItemCard(Item item) {
         LinearLayout card = card();
-        card.addView(image(item.img, 120));
+        card.addView(cardImage(item.img, 120));
         card.addView(text(item.name, 18, true));
         card.addView(text("审核状态: " + safe(item.checkStatus), 13, false));
         if (STATUS_REJECT.equals(item.checkStatus)) card.addView(text("拒绝理由: " + safe(item.reason), 13, false));
@@ -195,7 +195,7 @@ public class MeFragment extends BaseFragment {
 
     private View collectItemCard(Item item) {
         LinearLayout card = card();
-        card.addView(image(item.img, 140));
+        card.addView(cardImage(item.img, 140));
         card.addView(text(item.name, 18, true));
         card.addView(text(safe(item.description), 14, false));
         card.addView(requirementText(safe(item.requirement), 13));
