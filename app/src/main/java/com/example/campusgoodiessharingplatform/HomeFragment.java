@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.example.campusgoodiessharingplatform.model.Category;
 import com.example.campusgoodiessharingplatform.model.Article;
@@ -52,8 +54,9 @@ public class HomeFragment extends BaseFragment {
         HorizontalScrollView categoryScroll = root.findViewById(R.id.home_category_scroll);
         market.setText("市集");
         share.setText("分享");
-        setTabSelected(market, homeItems);
-        setTabSelected(share, !homeItems);
+        styleHomeTab(market, homeItems);
+        styleHomeTab(share, !homeItems);
+        styleIconButton(search);
         market.setOnClickListener(v -> { homeItems = true; searchKeyword = null; selectedCategoryId = null; render(); });
         share.setOnClickListener(v -> { homeItems = false; searchKeyword = null; selectedCategoryId = null; render(); });
         search.setOnClickListener(v -> showSearchDialog());
@@ -106,9 +109,9 @@ public class HomeFragment extends BaseFragment {
         MaterialButton button = new MaterialButton(requireContext());
         boolean selected = categoryId == null ? selectedCategoryId == null : categoryId.equals(selectedCategoryId);
         button.setText(name);
-        button.setTextSize(13);
+        button.setTextSize(16);
         button.setTypeface(selected ? Typeface.DEFAULT_BOLD : Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-        button.setTextColor(selected ? 0xff111111 : 0xff8B8B8B);
+        button.setTextColor(selected ? 0xff111827 : 0xffA0A7B4);
         button.setBackgroundTintList(ColorStateList.valueOf(0x00000000));
         button.setStrokeWidth(0);
         button.setMinWidth(0);
@@ -118,8 +121,8 @@ public class HomeFragment extends BaseFragment {
         button.setInsetTop(0);
         button.setInsetBottom(0);
         button.setPadding(dp(4), 0, dp(4), 0);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, dp(28));
-        params.setMargins(0, 0, dp(4), 0);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, dp(34));
+        params.setMargins(0, 0, dp(14), 0);
         categoryList.addView(button, params);
         button.setOnClickListener(v -> {
             selectedCategoryId = categoryId;
@@ -154,9 +157,13 @@ public class HomeFragment extends BaseFragment {
     private View itemCard(Item item) {
         LinearLayout card = card();
         card.addView(cardImage(item.img, 190));
-        card.addView(text(item.name, 18, true));
-        card.addView(text((item.categoryName == null ? "未分类" : item.categoryName) + "  |  收藏 " + intValue(item.collectCount), 12, false));
-        card.addView(text(item.description, 14, false));
+        card.addView(text(item.name, 20, true), topLp(8));
+        TextView meta = text((item.categoryName == null ? "未分类" : item.categoryName) + "      ♡ " + intValue(item.collectCount), 13, false);
+        meta.setTextColor(0xff9AA2B1);
+        card.addView(meta);
+        TextView desc = text(item.description, 16, false);
+        desc.setTextColor(0xff5B6472);
+        card.addView(desc);
         card.addView(requirementText(safe(item.requirement), 13));
         card.setOnClickListener(v -> showItemDetail(item, this::renderKeepingScroll));
         return card;
@@ -165,10 +172,38 @@ public class HomeFragment extends BaseFragment {
     private View articleCard(Article article) {
         LinearLayout card = card();
         card.addView(cardImage(article.img, 160));
-        card.addView(text(article.title, 18, true));
-        card.addView(text("发布人: " + safe(article.userName) + "  |  赞 " + intValue(article.likeCount) + "  评论 " + intValue(article.commentCount), 12, false));
-        card.addView(text(article.description, 14, false));
+        card.addView(text(article.title, 20, true), topLp(8));
+        TextView meta = text("发布人: " + safe(article.userName) + "           ♡ " + intValue(article.likeCount) + "   ▢ " + intValue(article.commentCount), 13, false);
+        meta.setTextColor(0xff9AA2B1);
+        card.addView(meta);
+        TextView desc = text(article.description, 16, false);
+        desc.setTextColor(0xff5B6472);
+        card.addView(desc);
         card.setOnClickListener(v -> host().openArticleDetail(article.id));
         return card;
+    }
+
+    private void styleHomeTab(MaterialButton button, boolean selected) {
+        button.setTextColor(selected ? 0xff3f51b5 : 0xff9AA2B1);
+        button.setTextSize(19);
+        button.setTypeface(Typeface.DEFAULT, selected ? Typeface.BOLD : Typeface.NORMAL);
+        button.setPaintFlags(selected ? (button.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG) : (button.getPaintFlags() & ~Paint.UNDERLINE_TEXT_FLAG));
+        button.setBackgroundTintList(ColorStateList.valueOf(0x00000000));
+        button.setStrokeWidth(0);
+        button.setMinWidth(0);
+        button.setMinimumWidth(0);
+        button.setInsetTop(0);
+        button.setInsetBottom(0);
+        button.setPadding(0, 0, 0, 0);
+    }
+
+    private void styleIconButton(MaterialButton button) {
+        button.setTextColor(0xff4B5563);
+        button.setBackgroundTintList(ColorStateList.valueOf(0x00000000));
+        button.setStrokeWidth(0);
+        button.setMinWidth(0);
+        button.setMinimumWidth(0);
+        button.setInsetTop(0);
+        button.setInsetBottom(0);
     }
 }

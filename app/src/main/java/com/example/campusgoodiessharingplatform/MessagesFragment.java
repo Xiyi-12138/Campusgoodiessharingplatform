@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 
 public class MessagesFragment extends BaseFragment {
     private View root;
+    private MaterialButton notice;
     private MaterialButton received;
     private MaterialButton sent;
 
@@ -35,22 +36,24 @@ public class MessagesFragment extends BaseFragment {
         TextView title = root.findViewById(R.id.messages_title);
         MaterialButton readAll = root.findViewById(R.id.messages_read_all);
         MaterialButton back = root.findViewById(R.id.messages_back);
+        notice = root.findViewById(R.id.messages_notice);
         received = root.findViewById(R.id.messages_received);
         sent = root.findViewById(R.id.messages_sent);
         LinearLayout list = root.findViewById(R.id.messages_list);
         title.setText("信息");
         readAll.setVisibility(View.VISIBLE);
         back.setVisibility(View.GONE);
-        updateTabState(null);
+        updateTabState(notice);
         readAll.setOnClickListener(v -> call(api().readAll(currentUser().id), x -> renderNotifications()));
         back.setOnClickListener(v -> renderNotifications());
+        notice.setOnClickListener(v -> renderNotifications());
         received.setOnClickListener(v -> showReceivedCharges());
         sent.setOnClickListener(v -> showSentCharges());
         call(api().notifications(1, 50, currentUser().id), p -> {
             list.removeAllViews();
             if (p.list == null || p.list.isEmpty()) list.addView(empty("暂无信息"));
             else for (AppNotification n : p.list) {
-                View card = simpleCard((Boolean.TRUE.equals(n.isRead) ? "" : "未读 | ") + safe(n.content), safe(n.time));
+                View card = notificationCard(n);
                 card.setOnClickListener(v -> call(api().readNotification(n.id), x -> renderNotifications()));
                 list.addView(card);
             }
@@ -58,6 +61,30 @@ public class MessagesFragment extends BaseFragment {
             list.removeAllViews();
             list.addView(empty("信息接口不可用，请启动 Campusgoodiessharingplatform/backend/springboot 后端\n" + error));
         });
+    }
+
+    private View notificationCard(AppNotification n) {
+        LinearLayout card = card();
+        if (!Boolean.TRUE.equals(n.isRead)) card.setBackgroundResource(R.drawable.bg_message_unread);
+        LinearLayout row = row();
+        TextView icon = text("铃", 18, true);
+        icon.setGravity(android.view.Gravity.CENTER);
+        row.addView(icon, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        LinearLayout body = new LinearLayout(requireContext());
+        body.setOrientation(LinearLayout.VERTICAL);
+        TextView title = text(safe(n.content), 17, true);
+        TextView time = text(safe(n.time), 12, false);
+        time.setTextColor(0xff8E97A8);
+        body.addView(title);
+        body.addView(time);
+        row.addView(body, new LinearLayout.LayoutParams(0, -2, 1));
+        if (!Boolean.TRUE.equals(n.isRead)) {
+            TextView dot = text("●", 16, true);
+            dot.setTextColor(0xffEF4444);
+            row.addView(dot);
+        }
+        card.addView(row);
+        return card;
     }
 
     private void showReceivedCharges() {
@@ -192,7 +219,8 @@ public class MessagesFragment extends BaseFragment {
     }
 
     private void updateTabState(MaterialButton selected) {
-        if (received == null || sent == null) return;
+        if (notice == null || received == null || sent == null) return;
+        setTabSelected(notice, notice == selected);
         setTabSelected(received, received == selected);
         setTabSelected(sent, sent == selected);
     }

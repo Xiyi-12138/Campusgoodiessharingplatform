@@ -52,13 +52,20 @@ public class MeFragment extends BaseFragment {
         avatarBox.addView(avatar(currentUser().avatar, 76));
         TextView name = root.findViewById(R.id.me_name);
         TextView info = root.findViewById(R.id.me_info);
+        TextView contact = root.findViewById(R.id.me_contact_info);
         name.setText(safe(currentUser().name));
-        info.setText("账号: " + safe(currentUser().username) + "\n手机: " + safe(currentUser().phone) + "\n邮箱: " + safe(currentUser().email));
+        info.setText("ID: " + safe(currentUser().username));
+        contact.setText("☎  " + safe(currentUser().phone) + "        ✉  " + safe(currentUser().email));
         MaterialButton profile = root.findViewById(R.id.me_edit_profile);
         myArticles = root.findViewById(R.id.me_articles);
         myItems = root.findViewById(R.id.me_items);
         collects = root.findViewById(R.id.me_collects);
         MaterialButton logout = root.findViewById(R.id.me_logout);
+        styleActionButton(profile, "✎", false);
+        logout.setTextColor(0xffff4d4f);
+        logout.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffffffff));
+        logout.setBackgroundResource(R.drawable.bg_danger_outline);
+        logout.setStrokeWidth(0);
         LinearLayout list = root.findViewById(R.id.me_content_list);
         list.removeAllViews();
         updateTabState(null);
@@ -67,6 +74,7 @@ public class MeFragment extends BaseFragment {
         myItems.setOnClickListener(v -> showMineItems());
         collects.setOnClickListener(v -> showCollects());
         logout.setOnClickListener(v -> host().logout());
+        showMineArticles();
     }
 
     private void showProfileDialog() {
@@ -112,8 +120,6 @@ public class MeFragment extends BaseFragment {
 
     public void showMineArticles() {
         updateTabState(myArticles);
-        TextView title = root.findViewById(R.id.me_title);
-        title.setText("我的帖子");
         LinearLayout list = root.findViewById(R.id.me_content_list);
         call(api().articlePage(1, 50, null, null, currentUser().id, currentUser().id), page -> {
             list.removeAllViews();
@@ -124,8 +130,6 @@ public class MeFragment extends BaseFragment {
 
     public void showMineItems() {
         updateTabState(myItems);
-        TextView title = root.findViewById(R.id.me_title);
-        title.setText("我的物品");
         LinearLayout list = root.findViewById(R.id.me_content_list);
         call(api().itemPage(1, 50, null, null, null, null, currentUser().id, currentUser().id), page -> {
             list.removeAllViews();
@@ -136,8 +140,6 @@ public class MeFragment extends BaseFragment {
 
     private void showCollects() {
         updateTabState(collects);
-        TextView title = root.findViewById(R.id.me_title);
-        title.setText("我的收藏夹");
         LinearLayout list = root.findViewById(R.id.me_content_list);
         call(api().itemPage(1, 50, null, true, STATUS_PASS, null, null, currentUser().id), page -> {
             list.removeAllViews();
@@ -163,13 +165,22 @@ public class MeFragment extends BaseFragment {
 
     private View mineItemCard(Item item) {
         LinearLayout card = card();
-        card.addView(cardImage(item.img, 120));
-        card.addView(text(item.name, 18, true));
-        card.addView(text("审核状态: " + safe(item.checkStatus), 13, false));
-        if (STATUS_REJECT.equals(item.checkStatus)) card.addView(text("拒绝理由: " + safe(item.reason), 13, false));
-        card.addView(text("上架状态: " + (Boolean.TRUE.equals(item.status) ? "已上架" : "未上架"), 13, false));
-        card.addView(text(safe(item.description), 14, false));
-        card.addView(requirementText(safe(item.requirement), 13));
+        LinearLayout main = row();
+        main.setGravity(android.view.Gravity.TOP);
+        main.addView(thumbnailImage(item.img, 92), new LinearLayout.LayoutParams(dp(92), dp(92)));
+        LinearLayout body = new LinearLayout(requireContext());
+        body.setOrientation(LinearLayout.VERTICAL);
+        TextView title = text(item.name, 17, true);
+        body.addView(title);
+        body.addView(requirementText(safe(item.requirement), 13));
+        TextView state = text("审核: " + safe(item.checkStatus) + " | " + (Boolean.TRUE.equals(item.status) ? "已上架" : "未上架"), 12, false);
+        state.setTextColor(0xff9AA2B1);
+        body.addView(state);
+        if (STATUS_REJECT.equals(item.checkStatus)) body.addView(text("拒绝理由: " + safe(item.reason), 12, false));
+        LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(0, -2, 1);
+        bodyParams.setMargins(dp(14), 0, 0, 0);
+        main.addView(body, bodyParams);
+        card.addView(main);
         LinearLayout actions = row();
         MaterialButton status = STATUS_PASS.equals(item.checkStatus)
                 ? (Boolean.TRUE.equals(item.status) ? outlineButton("下架") : button("上架"))
@@ -185,20 +196,30 @@ public class MeFragment extends BaseFragment {
                 toast("物品尚未通过审核，不能上架");
                 return;
             }
-            Map<String, Object> body = new HashMap<>();
-            body.put("id", item.id);
-            body.put("status", !Boolean.TRUE.equals(item.status));
-            call(api().updateItemStatus(body), x -> { toast("状态已更新"); showMineItems(); });
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("id", item.id);
+            requestBody.put("status", !Boolean.TRUE.equals(item.status));
+            call(api().updateItemStatus(requestBody), x -> { toast("状态已更新"); showMineItems(); });
         });
         return card;
     }
 
     private View collectItemCard(Item item) {
         LinearLayout card = card();
-        card.addView(cardImage(item.img, 140));
-        card.addView(text(item.name, 18, true));
-        card.addView(text(safe(item.description), 14, false));
-        card.addView(requirementText(safe(item.requirement), 13));
+        LinearLayout main = row();
+        main.setGravity(android.view.Gravity.TOP);
+        main.addView(thumbnailImage(item.img, 92), new LinearLayout.LayoutParams(dp(92), dp(92)));
+        LinearLayout body = new LinearLayout(requireContext());
+        body.setOrientation(LinearLayout.VERTICAL);
+        body.addView(text(item.name, 17, true));
+        body.addView(requirementText(safe(item.requirement), 13));
+        TextView desc = text(safe(item.description), 13, false);
+        desc.setTextColor(0xff5B6472);
+        body.addView(desc);
+        LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(0, -2, 1);
+        bodyParams.setMargins(dp(14), 0, 0, 0);
+        main.addView(body, bodyParams);
+        card.addView(main);
         LinearLayout actions = row();
         MaterialButton uncollect = outlineButton("取消收藏");
         actions.addView(uncollect, new LinearLayout.LayoutParams(0, dp(42), 1));

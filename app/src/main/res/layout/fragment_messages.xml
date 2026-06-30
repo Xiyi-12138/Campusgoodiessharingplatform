@@ -27,8 +27,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="信息"
-                android:textColor="#222222"
-                android:textSize="24sp"
+                android:textColor="#111827"
+                android:textSize="26sp"
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
@@ -57,10 +57,19 @@
             android:paddingBottom="10dp">
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/messages_notice"
+                style="@style/AppButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="通知" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/messages_received"
                 style="@style/AppButton"
                 android:layout_width="0dp"
-                android:layout_height="42dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
                 android:layout_weight="1"
                 android:text="收到的申请" />
 
@@ -68,7 +77,8 @@
                 android:id="@+id/messages_sent"
                 style="@style/AppButton"
                 android:layout_width="0dp"
-                android:layout_height="42dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
                 android:layout_weight="1"
                 android:text="我的申请" />
         </LinearLayout>

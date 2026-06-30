@@ -22,3 +22,4 @@ backend/springboot/files/
 .idea/
 /backend/springboot/backend-live.err.log
 /backend/springboot/backend-live.log
+prototype_mockingbot_ai_prompt.md

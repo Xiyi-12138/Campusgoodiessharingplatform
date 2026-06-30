@@ -28,16 +28,16 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="首页"
-                android:textColor="#222222"
-                android:textSize="24sp"
+                android:textColor="#111827"
+                android:textSize="26sp"
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/home_search"
-                style="@style/AppButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="搜索" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:text="⌕"
+                android:textSize="28sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -51,18 +51,15 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/tab_market"
-                style="@style/AppButton"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
                 android:text="市集" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/tab_share"
-                style="@style/AppButton"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_marginStart="18dp"
                 android:text="分享" />
         </LinearLayout>
 

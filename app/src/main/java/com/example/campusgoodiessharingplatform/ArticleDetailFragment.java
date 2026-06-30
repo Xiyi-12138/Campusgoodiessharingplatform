@@ -57,9 +57,11 @@ public class ArticleDetailFragment extends BaseFragment {
         LinearLayout contentImages = root.findViewById(R.id.article_content_images);
         String articleContent = article.content == null ? safe(article.description) : article.content;
         if (article.img != null && !article.img.isEmpty()) com.bumptech.glide.Glide.with(this).load(normalizeUrl(article.img)).into(image);
+        styleActionButton(back, "‹", false);
+        back.setTextSize(30);
         title.setText(article.title);
         authorAvatar.removeAllViews();
-        authorAvatar.addView(roundImage(article.avatar, 38));
+        authorAvatar.addView(roundImage(article.avatar, 46));
         authorInfo.setText(safe(article.userName) + "\nID: " + (article.userId == null ? "" : article.userId));
         time.setText("发布时间: " + safe(article.time));
         stats.setText("赞 " + intValue(article.likeCount) + " | 评论 " + intValue(article.commentCount));

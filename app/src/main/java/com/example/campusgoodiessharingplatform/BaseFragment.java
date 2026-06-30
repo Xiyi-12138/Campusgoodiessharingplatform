@@ -122,8 +122,8 @@ public abstract class BaseFragment extends Fragment {
         name.setText(safe(item.name));
         meta.setText("分类: " + safe(item.categoryName) + " | 收藏 " + intValue(item.collectCount));
         audit.setText("审核: " + safe(item.checkStatus) + " | 上架: " + (Boolean.TRUE.equals(item.status) ? "已上架" : "未上架"));
-        description.setText("描述: " + safe(item.description));
-        requirement.setText(styledRequirement(safe(item.requirement)));
+        description.setText(safe(item.description));
+        requirement.setText(safe(item.requirement));
         owner.setText("发布人: " + safe(item.userName));
         styleActionButton(collect, item.collectId == null ? "收藏" : "取消收藏", item.collectId == null);
         if (item.userId == null || !item.userId.equals(currentUser().id)) {
@@ -154,9 +154,9 @@ public abstract class BaseFragment extends Fragment {
     protected void styleActionButton(MaterialButton button, String text, boolean primary) {
         button.setText(text);
         button.setTextColor(primary ? 0xffffffff : 0xff3f51b5);
-        button.setTextSize(14);
+        button.setTextSize(16);
         button.setTypeface(Typeface.DEFAULT_BOLD);
-        button.setCornerRadius(dp(22));
+        button.setCornerRadius(dp(16));
         button.setBackgroundTintList(ColorStateList.valueOf(primary ? 0xff3f51b5 : 0xffeef1ff));
         button.setStrokeWidth(0);
     }
@@ -193,30 +193,33 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected void showExchangeDialog(Item item) {
-        LinearLayout form = formLayout();
-        EditText content = input("我提供的交换物品");
-        EditText remark = input("交换理由");
-        form.addView(text(item.name, 18, true));
-        form.addView(content, topLp(8));
-        form.addView(remark, topLp(8));
-        new AlertDialog.Builder(requireContext()).setTitle("申请交换")
-                .setView(form)
-                .setNegativeButton("取消", null)
-                .setPositiveButton("提交", (d, w) -> {
-                    String contentValue = content.getText().toString().trim();
-                    String remarkValue = remark.getText().toString().trim();
-                    if (contentValue.isEmpty() || remarkValue.isEmpty()) {
-                        toast("请完整填写交换物品和理由");
-                        return;
-                    }
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("itemId", item.id);
-                    body.put("itemUserid", item.userId);
-                    body.put("userId", currentUser().id);
-                    body.put("content", contentValue);
-                    body.put("remark", remarkValue);
-                    call(api().addCharge(body), x -> toast("申请已提交"));
-                }).show();
+        View form = getLayoutInflater().inflate(R.layout.dialog_exchange, null);
+        TextView title = form.findViewById(R.id.exchange_item_title);
+        EditText content = form.findViewById(R.id.exchange_content);
+        EditText remark = form.findViewById(R.id.exchange_remark);
+        MaterialButton submit = form.findViewById(R.id.exchange_submit);
+        title.setText("正在申请: " + safe(item.name));
+        styleActionButton(submit, "提交", true);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext()).setTitle("申请交换").setView(form).create();
+        submit.setOnClickListener(v -> {
+            String contentValue = content.getText().toString().trim();
+            String remarkValue = remark.getText().toString().trim();
+            if (contentValue.isEmpty() || remarkValue.isEmpty()) {
+                toast("请完整填写交换物品和理由");
+                return;
+            }
+            Map<String, Object> body = new HashMap<>();
+            body.put("itemId", item.id);
+            body.put("itemUserid", item.userId);
+            body.put("userId", currentUser().id);
+            body.put("content", contentValue);
+            body.put("remark", remarkValue);
+            call(api().addCharge(body), x -> {
+                dialog.dismiss();
+                toast("申请已提交");
+            });
+        });
+        dialog.show();
     }
 
     protected ScrollView scroll(View child) {
@@ -276,8 +279,8 @@ public abstract class BaseFragment extends Fragment {
     protected LinearLayout card() {
         LinearLayout c = new LinearLayout(requireContext());
         c.setOrientation(LinearLayout.VERTICAL);
-        c.setPadding(dp(14), dp(14), dp(14), dp(14));
-        c.setBackgroundColor(0xffffffff);
+        c.setPadding(dp(12), dp(12), dp(12), dp(14));
+        c.setBackgroundResource(R.drawable.bg_soft_card);
         c.setLayoutParams(topLp(10));
         return c;
     }
@@ -308,6 +311,15 @@ public abstract class BaseFragment extends Fragment {
         return iv;
     }
 
+    protected ImageView thumbnailImage(String url, int size) {
+        ImageView iv = new ImageView(requireContext());
+        iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        iv.setBackgroundColor(0xffeeeeee);
+        iv.setLayoutParams(lp(dp(size), dp(size)));
+        if (url != null && !url.isEmpty()) Glide.with(this).load(normalizeUrl(url)).centerCrop().into(iv);
+        return iv;
+    }
+
     protected View avatar(String url, int size) {
         FrameLayout wrap = new FrameLayout(requireContext());
         wrap.setPadding(0, dp(4), 0, dp(8));
@@ -333,9 +345,9 @@ public abstract class BaseFragment extends Fragment {
         TextView t = new TextView(requireContext());
         t.setText(s == null ? "" : s);
         t.setTextSize(sp);
-        t.setTextColor(0xff222222);
+        t.setTextColor(0xff111827);
         if (bold) t.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        t.setPadding(0, dp(4), 0, dp(4));
+        t.setPadding(0, dp(3), 0, dp(3));
         return t;
     }
 
@@ -343,8 +355,8 @@ public abstract class BaseFragment extends Fragment {
         EditText e = new EditText(requireContext());
         e.setHint(hint);
         e.setSingleLine(false);
-        e.setBackgroundColor(0xffffffff);
-        e.setPadding(dp(12), dp(8), dp(12), dp(8));
+        e.setBackgroundResource(R.drawable.bg_soft_input);
+        e.setPadding(dp(16), dp(10), dp(16), dp(10));
         return e;
     }
 
