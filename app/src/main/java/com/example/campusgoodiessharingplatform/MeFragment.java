@@ -61,7 +61,14 @@ public class MeFragment extends BaseFragment {
         myItems = root.findViewById(R.id.me_items);
         collects = root.findViewById(R.id.me_collects);
         MaterialButton logout = root.findViewById(R.id.me_logout);
-        styleActionButton(profile, "✎", false);
+        profile.setText("");
+        profile.setIconResource(R.drawable.setting);
+        profile.setIconTint(android.content.res.ColorStateList.valueOf(0xff3f51b5));
+        profile.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
+        profile.setIconPadding(0);
+        profile.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffeef1ff));
+        profile.setCornerRadius(dp(24));
+        profile.setStrokeWidth(0);
         logout.setTextColor(0xffff4d4f);
         logout.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffffffff));
         logout.setBackgroundResource(R.drawable.bg_danger_outline);

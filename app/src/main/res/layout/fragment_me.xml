@@ -92,8 +92,7 @@
                     android:id="@+id/me_edit_profile"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:text="✎"
-                    android:textSize="18sp" />
+                    android:text="" />
             </LinearLayout>
 
             <TextView
