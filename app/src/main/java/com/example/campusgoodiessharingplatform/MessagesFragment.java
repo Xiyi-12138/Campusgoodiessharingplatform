@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -67,8 +68,10 @@ public class MessagesFragment extends BaseFragment {
         LinearLayout card = card();
         if (!Boolean.TRUE.equals(n.isRead)) card.setBackgroundResource(R.drawable.bg_message_unread);
         LinearLayout row = row();
-        TextView icon = text("铃", 18, true);
-        icon.setGravity(android.view.Gravity.CENTER);
+        ImageView icon = new ImageView(requireContext());
+        icon.setImageResource(R.drawable.small_bell);
+        icon.setColorFilter(0xff3f51b5);
+        icon.setPadding(dp(12), dp(12), dp(12), dp(12));
         row.addView(icon, new LinearLayout.LayoutParams(dp(48), dp(48)));
         LinearLayout body = new LinearLayout(requireContext());
         body.setOrientation(LinearLayout.VERTICAL);
